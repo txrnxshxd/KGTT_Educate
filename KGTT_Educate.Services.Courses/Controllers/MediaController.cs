@@ -8,11 +8,11 @@ namespace KGTT_Educate.Services.Courses.Controllers
     [ApiController]
     public class MediaController : ControllerBase
     {
-        private readonly IMediaService _mediaService;
+        private readonly IFileService _mediaService;
         private readonly ICourseMediaService _courseMediaService;
         private readonly ICourseService _courseService;
 
-        public MediaController(ICourseMediaService courseMediaService, ICourseService courseService, IMediaService mediaService)
+        public MediaController(ICourseMediaService courseMediaService, ICourseService courseService, IFileService mediaService)
         {
             _courseMediaService = courseMediaService;
             _courseService = courseService;

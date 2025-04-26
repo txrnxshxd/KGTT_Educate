@@ -14,15 +14,13 @@ namespace KGTT_Educate.Services.Courses.Data
         private readonly ICourseMediaService _courseMediaService;
         private readonly ICourseFileService _courseFileService;
         private readonly IFileService _fileService;
-        private readonly IMediaService _mediaService;
 
-        public CourseService(IMongoDatabase database, ICourseMediaService courseRoMediaService, ICourseFileService courseFileService, IFileService fileService, IMediaService mediaService)
+        public CourseService(IMongoDatabase database, ICourseMediaService courseRoMediaService, ICourseFileService courseFileService, IFileService fileService)
         {
             _courseCollection = database.GetCollection<Course>("Courses");
             _courseMediaService = courseRoMediaService;
             _courseFileService = courseFileService;
             _fileService = fileService;
-            _mediaService = mediaService;
         }
 
         public async Task<List<Course>> GetAllAsync()
@@ -58,7 +56,7 @@ namespace KGTT_Educate.Services.Courses.Data
                     foreach (var mediaItem in media)
                     {
                         await _courseMediaService.DeleteAsync(mediaItem.Id);
-                        await _mediaService.DeleteFileAsync(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "media", mediaItem.MediaPath));
+                        await _fileService.DeleteFileAsync(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "media", mediaItem.MediaPath));
                     }
                 }
 
