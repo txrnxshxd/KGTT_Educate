@@ -1,0 +1,6 @@
+@KGTT_Educate.Services.Courses_HostAddress = http://localhost:5046
+
+GET {{KGTT_Educate.Services.Courses_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

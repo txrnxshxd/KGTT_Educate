@@ -1,0 +1,6 @@
+@KGTT_Educate.Services.EmailAPI_HostAddress = http://localhost:5203
+
+GET {{KGTT_Educate.Services.EmailAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
