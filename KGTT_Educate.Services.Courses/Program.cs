@@ -55,9 +55,16 @@ builder.Services.AddScoped<IFileService>(provider =>
     return new FileService(fileStoragePath);
 });
 
+// Сервисы курсов
 builder.Services.AddScoped<ICourseService, CourseService>(); 
 builder.Services.AddScoped<ICourseMediaService, CourseMediaService>(); 
-builder.Services.AddScoped<ICourseFileService, CourseFileService>(); 
+builder.Services.AddScoped<ICourseFileService, CourseFileService>();
+builder.Services.AddScoped<ICourseGroupService, СourseGroupService>();
+
+// Сервисы уроков
+builder.Services.AddScoped<ILessonService, LessonService>();
+builder.Services.AddScoped<ILessonMediaService, LessonMediaService>();
+builder.Services.AddScoped<ILessonFileService, LessonFileService>();
 
 var app = builder.Build();
 

@@ -10,11 +10,11 @@ namespace KGTT_Educate.Services.Courses.Data.Interfaces
         public Task<CourseGroup> GetLastAsync();
     }
 
-    public interface ICommandCourseGroupService
+    public interface ICourseGroupCommandService
     {
         public Task CreateAsync(CourseGroup courseGroup);
         public Task DeleteAsync(int? id);
     }
 
-    public interface ICourseGroupService : IReadOnlyCourseGroupService, ICommandCourseGroupService { }
+    public interface ICourseGroupService : IReadOnlyCourseGroupService, ICourseGroupCommandService { }
 }
