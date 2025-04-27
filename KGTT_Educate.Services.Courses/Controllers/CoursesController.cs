@@ -1,4 +1,4 @@
-﻿using KGTT_Educate.Services.Courses.Data.Interfaces;
+﻿using KGTT_Educate.Services.Courses.Data.Repository.Interfaces;
 using KGTT_Educate.Services.Courses.Models;
 using KGTT_Educate.Services.Courses.Models.Dto;
 using Mapster;
@@ -13,22 +13,18 @@ namespace KGTT_Educate.Services.Courses.Controllers
     [ApiController]
     public class CoursesController : ControllerBase
     {
-        private readonly ICourseService _courses;
-        private readonly ICourseMediaService _courseMedia;
-        private readonly ICourseFileService _courseFile;
+        private readonly ICourseRepository _courseRepository;
 
-        public CoursesController(ICourseService courses, ICourseMediaService courseMedia, ICourseFileService courseFile)
+        public CoursesController(ICourseRepository repo, ICourseFilesRepository files)
         {
-            _courses = courses;
-            _courseMedia = courseMedia;
-            _courseFile = courseFile;
+            _courseRepository = repo;
         }
 
         [HttpGet]
         public async Task<ActionResult<List<Course>>> GetAll()
         {
             // ПОЛУЧАЕМ ВСЕ КУРСЫ
-            List<Course> courses = await _courses.GetAllAsync();
+            List<Course> courses = await _courseRepository.GetAllAsync();
 
             if (courses == null || courses.Count == 0) return NotFound();
 
@@ -36,47 +32,21 @@ namespace KGTT_Educate.Services.Courses.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Course>> GetById(int? id)
+        public async Task<ActionResult<Course>> GetById(int id)
         {
-            if (id == null || id <= 0) return NotFound();
+            if (id <= 0) return NotFound();
             
-            Course course = await _courses.GetByIdAsync(id);
+            Course course = await _courseRepository.GetByIdAsync(id);
+
+            if (course == null) return NotFound();
 
             return Ok(course);
         }
 
         [HttpGet("group/{groupId}")]
-        public async Task<ActionResult<Course>> GetByGroupId(int? groupId)
+        public async Task<ActionResult<Course>> GetByGroupId(int groupId)
         {
             return Ok();
-        }
-
-        [HttpGet("media/{courseId}")]
-        public async Task<ActionResult<List<CourseMedia>>> GetCourseMedia(int? courseId)
-        {
-            if (courseId == null || courseId <= 0) return NotFound();
-
-            List<CourseMedia> courseMediaList = await _courseMedia.GetByCourseIdAsync(courseId);
-
-            if (courseMediaList == null || courseMediaList.Count <= 0) return NotFound();
-
-            List<CourseMediaDTO> courseMediaDTO = courseMediaList.Adapt<List<CourseMediaDTO>>();
-
-            return Ok(courseMediaDTO);
-        }
-
-        [HttpGet("files/{courseId}")]
-        public async Task<ActionResult<List<CourseFile>>> GetCourseFiles(int? courseId)
-        {
-            if (courseId == null || courseId <= 0) return NotFound();
-
-            List<CourseFile> courseFilesList = await _courseFile.GetByCourseIdAsync(courseId);
-
-            if (courseFilesList == null || courseFilesList.Count <= 0) return NotFound();
-
-            List<CourseFileDTO> courseFilesDTO = courseFilesList.Adapt<List<CourseFileDTO>>();
-
-            return Ok(courseFilesDTO);
         }
 
         [HttpPost]
@@ -84,23 +54,23 @@ namespace KGTT_Educate.Services.Courses.Controllers
         {
             if (course == null) return BadRequest();
 
-            Course lastEl = await _courses.GetLastAsync();
+            Course lastEl = await _courseRepository.GetLastAsync();
 
             course.Id = lastEl == null ? 1 : lastEl.Id + 1;
 
-            await _courses.CreateAsync(course);
+            await _courseRepository.CreateAsync(course);
 
             return Ok(new { message = $"Курс {course.Name} успешно создан!" });
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> Update(int? id, Course course)
+        public async Task<ActionResult> Update(int id, Course course)
         {
             if (id != course.Id) return BadRequest();
 
             try
             {
-                await _courses.UpdateAsync(id, course);
+                await _courseRepository.UpdateAsync(id, course);
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -112,11 +82,11 @@ namespace KGTT_Educate.Services.Courses.Controllers
         }
 
         [HttpDelete]
-        public async Task<ActionResult> Delete(int? id)
+        public async Task<ActionResult> Delete(int id)
         {
-            if (id == null) return NotFound();
+            if (id <= 0 ) return BadRequest();
 
-            await _courses.DeleteByIdAsync(id);
+            await _courseRepository.DeleteAsync(id);
 
             return Ok(new { message = "Курс удален" });
         }

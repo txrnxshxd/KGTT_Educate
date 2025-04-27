@@ -1,6 +1,6 @@
-﻿using KGTT_Educate.Services.Courses.Data.Interfaces;
+﻿using KGTT_Educate.Services.Courses.Data.Services.Interfaces;
 
-namespace KGTT_Educate.Services.Courses.Data
+namespace KGTT_Educate.Services.Courses.Data.Services
 {
     public class FileService : IFileService
     {
@@ -42,16 +42,16 @@ namespace KGTT_Educate.Services.Courses.Data
             }
 
             var fileInfo = new FileInfo(filePath);
-            var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+            //var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+            using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+            {
+                response.Headers.Add("Content-Disposition", $"attachment; filename=\"{fileInfo.Name}\"");
+                response.Headers.Add("Content-Length", fileInfo.Length.ToString());
+                response.ContentType = "application/octet-stream";
 
-            response.Headers.Add("Content-Disposition", $"attachment; filename=\"{fileInfo.Name}\"");
-            response.Headers.Add("Content-Length", fileInfo.Length.ToString());
-            response.ContentType = "application/octet-stream";
-
-            await fileStream.CopyToAsync(response.Body);
-            await response.Body.FlushAsync();
-
-            fileStream.Dispose();
+                await fileStream.CopyToAsync(response.Body);
+                await response.Body.FlushAsync();
+            }
         }
     }
 }

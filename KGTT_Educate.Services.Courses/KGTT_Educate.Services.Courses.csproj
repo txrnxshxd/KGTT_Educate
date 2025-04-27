@@ -24,11 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\Media\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="wwwroot\Files\79b667a4-8f6b-497d-85d6-09e882fdb21e_test.txt" />
+    <Folder Include="wwwroot\Files\" />
   </ItemGroup>
 
 </Project>
