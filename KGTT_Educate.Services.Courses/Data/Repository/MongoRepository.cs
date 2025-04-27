@@ -35,7 +35,9 @@ namespace KGTT_Educate.Services.Courses.Data.Repository
 
         public async Task<T> GetLastAsync()
         {
-            return await _collection.Find(_ => true).FirstOrDefaultAsync();
+            return await _collection.Find(_ => true)
+                            .Sort(Builders<T>.Sort.Descending("Id"))
+                            .FirstOrDefaultAsync();
         }
     }
 }

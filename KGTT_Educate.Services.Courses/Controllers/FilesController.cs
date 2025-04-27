@@ -24,7 +24,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
             _courseRepository = repo;
         }
 
-        [HttpGet("download/{id}")]
+        [HttpGet("Download/{id}")]
         public async Task<ActionResult> DownloadFile(int id)
         {
             CourseFile courseFile = await _courseFilesRepository.GetByIdAsync(id);
@@ -48,10 +48,10 @@ namespace KGTT_Educate.Services.Courses.Controllers
             }
         }
 
-        [HttpPost("upload/{courseId}")]
+        [HttpPost("Upload/{courseId}")]
         public async Task<ActionResult> UploadFile(IFormFile file, int courseId)
         {
-            if (courseId == 0) return NotFound();
+            if (courseId <= 0) return NotFound();
 
             if (file == null || file.Length == 0) return BadRequest();
 
@@ -73,9 +73,11 @@ namespace KGTT_Educate.Services.Courses.Controllers
                 // GET PROVIDED FILE EXTENSION
                 string fileExt = Path.GetExtension(file.FileName).ToLowerInvariant();
 
-                if (!fileExtensions.Contains(fileExt) || !mediaExtensions.Contains(fileExt)) return BadRequest(new { Message = $"Вы не можете загрузить файл с расширением {fileExt}" });
+                if (!fileExtensions.Contains(fileExt) && !mediaExtensions.Contains(fileExt)) return BadRequest(new { Message = $"Вы не можете загрузить файл с расширением {fileExt}" });
 
-                string filePath = await _fileService.SaveFileAsync(file);
+                bool isMedia = mediaExtensions.Contains(fileExt) ? true : false;
+
+                string filePath = await _fileService.UploadFileAsync(file, isMedia);
 
                 string fileName = Path.GetFileName(filePath);
 
@@ -87,7 +89,8 @@ namespace KGTT_Educate.Services.Courses.Controllers
                 {
                     CourseId = course.Id,
                     Course = course,
-                    FilePath = fileName
+                    FilePath = fileName,
+                    IsMedia = isMedia
                 };
 
                 // ПОЛУЧАЕМ ПОСЛЕДНИЙ ФАЙЛ ИЗ CourseMedia
@@ -102,7 +105,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
                 // CREATE DATABASE ENTRY
                 await _courseFilesRepository.CreateAsync(courseFile);
 
-                return Ok(new { CourseId = courseId, FilePath = wwwrootPath });
+                return Ok(new { CourseId = courseId, FilePath = wwwrootPath, IsMedia = isMedia ? "media" : "file" });
             }
             catch (Exception ex)
             {
@@ -111,13 +114,16 @@ namespace KGTT_Educate.Services.Courses.Controllers
             }
         }
 
-        [HttpDelete("delete/{id}")]
+        [HttpDelete("Delete/{id}")]
         public async Task<ActionResult> Delete(int id)
         {
             if (id == 0) return NotFound();
 
             CourseFile courseMedia = await _courseFilesRepository.GetByIdAsync(id);
-            string fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Media", courseMedia.FilePath);
+
+            string directory = courseMedia.IsMedia ? "Media" : "Files";
+
+            string fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", directory, courseMedia.FilePath);
 
             await _fileService.DeleteFileAsync(fullPath);
             await _courseFilesRepository.DeleteAsync(id);

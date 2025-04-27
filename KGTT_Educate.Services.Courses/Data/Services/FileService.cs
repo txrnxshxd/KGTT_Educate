@@ -4,17 +4,21 @@ namespace KGTT_Educate.Services.Courses.Data.Services
 {
     public class FileService : IFileService
     {
-        private readonly string _fileStoragePath;
+        private readonly string _defaultStoragePath;
+        private readonly string _mediaStoragePath;
 
-        public FileService(string fileStoragePath)
+        public FileService(string fileStoragePath, string mediaStoragePath)
         {
-            _fileStoragePath = fileStoragePath;
+            _defaultStoragePath = fileStoragePath;
+            _mediaStoragePath = mediaStoragePath;
         }
 
-        public async Task<string> SaveFileAsync(IFormFile file)
+        public async Task<string> UploadFileAsync(IFormFile file, bool isMedia)
         {
+            var targetPath = isMedia ? _mediaStoragePath : _defaultStoragePath;
+
             var fileName = $"{Guid.NewGuid().ToString()}_{file.FileName}";
-            var filePath = Path.Combine(_fileStoragePath, fileName);
+            var filePath = Path.Combine(targetPath, fileName);
 
             using (var stream = new FileStream(filePath, FileMode.Create))
             {

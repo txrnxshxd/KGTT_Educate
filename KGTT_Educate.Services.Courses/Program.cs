@@ -41,36 +41,31 @@ builder.Services.AddSingleton<IMongoDatabase>(provider =>
 });
 
 builder.Services.Configure<FileStorageSettings>(builder.Configuration.GetSection("FileStorage"));
-builder.Services.Configure<MediaStorageSettings>(builder.Configuration.GetSection("MediaStorage"));
 
 // Регистрация сервиса для файлов
 builder.Services.AddScoped<IFileService>(provider =>
 {
     var settings = provider.GetService<IOptions<FileStorageSettings>>().Value;
-    var fileStoragePath = Path.Combine(Directory.GetCurrentDirectory(), settings.Path);
+    var fileStoragePath = Path.Combine(Directory.GetCurrentDirectory(), settings.DefaultPath);
 
     if (!Directory.Exists(fileStoragePath))
     {
         Directory.CreateDirectory(fileStoragePath);
     }
 
-    return new FileService(fileStoragePath);
-});
-
-builder.Services.AddScoped<IFileService>(provider =>
-{
-    var settings = provider.GetService<IOptions<MediaStorageSettings>>().Value;
-    var mediaStoragePath = Path.Combine(Directory.GetCurrentDirectory(), settings.Path);
-
+    var mediaStoragePath = Path.Combine(Directory.GetCurrentDirectory(), settings.MediaPath);
     if (!Directory.Exists(mediaStoragePath))
     {
         Directory.CreateDirectory(mediaStoragePath);
     }
 
-    return new FileService(mediaStoragePath);
+    Console.WriteLine(settings.DefaultPath);
+    Console.WriteLine(settings.MediaPath);
+
+    return new FileService(fileStoragePath, mediaStoragePath);
 });
 
-//builder.Services.AddScoped(typeof(IMongoRepository<>), typeof(MongoRepository<>));
+
 builder.Services.AddScoped<ILessonRepository>(provider =>
 
     new LessonRepository(

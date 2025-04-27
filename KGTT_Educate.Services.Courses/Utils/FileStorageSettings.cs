@@ -2,6 +2,7 @@
 {
     public class FileStorageSettings
     {
-        public string Path { get; set; }
+        public string DefaultPath { get; set; }
+        public string MediaPath { get; set; }
     }
 }

@@ -10,5 +10,6 @@ namespace KGTT_Educate.Services.Courses.Models
         public Lesson Lesson { get; set; }
 
         public string FilePath { get; set; } = string.Empty;
+        public bool IsMedia;
     }
 }

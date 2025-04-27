@@ -46,20 +46,6 @@ namespace KGTT_Educate.Services.Courses.Controllers
             return Ok();
         }
 
-        [HttpGet("Media/{lessonId}")]
-        public async Task<ActionResult<List<LessonFile>>> GetLessonMedia(int lessonId)
-        {
-            if (lessonId <= 0) return NotFound();
-
-            List<LessonFile> lessonMediaList = await _lessonFile.GetByLessonIdAsync(lessonId);
-
-            if (lessonMediaList == null || lessonMediaList.Count <= 0) return NotFound();
-
-            List<LessonFileDTO> courseMediaDTO = lessonMediaList.Adapt<List<LessonFileDTO>>();
-
-            return Ok(courseMediaDTO);
-        }
-
         [HttpGet("Files/{lessonId}")]
         public async Task<ActionResult<List<CourseFile>>> GetLessonFiles(int lessonId)
         {
@@ -106,7 +92,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
             return Ok();
         }
 
-        [HttpDelete]
+        [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {
             if (id <= 0) return NotFound();
