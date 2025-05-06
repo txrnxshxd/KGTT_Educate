@@ -1,4 +1,6 @@
-﻿namespace KGTT_Educate.Services.Courses.Data.Interfaces
+﻿using KGTT_Educate.Services.Courses.Data.Interfaces.Repository;
+
+namespace KGTT_Educate.Services.Courses.Data.Interfaces.UoW
 {
     public interface IUnitOfWork
     {

@@ -1,4 +1,4 @@
-﻿using KGTT_Educate.Services.Courses.Data.Interfaces;
+﻿using KGTT_Educate.Services.Courses.Data.Interfaces.Repository;
 using KGTT_Educate.Services.Courses.Models;
 using KGTT_Educate.Services.Courses.Models.Dto;
 using Mapster;

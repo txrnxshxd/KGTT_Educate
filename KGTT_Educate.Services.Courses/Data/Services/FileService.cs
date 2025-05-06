@@ -1,24 +1,33 @@
-﻿using KGTT_Educate.Services.Courses.Data.Interfaces;
+﻿using KGTT_Educate.Services.Courses.Data.Interfaces.Services;
 
 namespace KGTT_Educate.Services.Courses.Data.Services
 {
     public class FileService : IFilesService
     {
-        private readonly string _defaultStoragePath;
-        private readonly string _mediaStoragePath;
+        private readonly string _coursesStoragePath;
+        private readonly string _lessonsStoragePath;
 
-        public FileService(string fileStoragePath, string mediaStoragePath)
+        public FileService(string coursesStoragePath, string lessonsStoragePath)
         {
-            _defaultStoragePath = fileStoragePath;
-            _mediaStoragePath = mediaStoragePath;
+            _coursesStoragePath = coursesStoragePath;
+            _lessonsStoragePath = lessonsStoragePath;
         }
 
-        public async Task<string> UploadFileAsync(IFormFile file, bool isMedia)
+        public async Task<string> UploadFileAsync(IFormFile file, bool isLesson = false, bool isMedia = false)
         {
-            var targetPath = isMedia ? _mediaStoragePath : _defaultStoragePath;
+            string directory = isLesson ? _lessonsStoragePath : _coursesStoragePath;
+            
+            string fileName = $"{Guid.NewGuid().ToString()}{Path.GetExtension(file.FileName)}";
 
-            var fileName = $"{Guid.NewGuid().ToString()}{Path.GetExtension(file.FileName)}";
-            var filePath = Path.Combine(targetPath, fileName);
+            string filesDirectory = isMedia ? Path.Combine(directory, "Media") : Path.Combine(directory, "Files");
+
+            if (!Directory.Exists(filesDirectory))
+            {
+                Directory.CreateDirectory(filesDirectory);
+            }
+
+            string filePath = Path.Combine(filesDirectory, fileName);
+
 
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
@@ -26,6 +35,11 @@ namespace KGTT_Educate.Services.Courses.Data.Services
             }
 
             return filePath;
+        }
+
+        public async Task<string> UploadMediaAsync(IFormFile file, bool isLesson = false)
+        {
+            return await UploadFileAsync(file, isLesson, true);
         }
 
         public Task DeleteFileAsync(string filePath)

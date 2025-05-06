@@ -1,5 +1,6 @@
-﻿using KGTT_Educate.Services.Courses.Data.Interfaces;
+﻿using KGTT_Educate.Services.Courses.Data.Interfaces.Repository;
 using KGTT_Educate.Services.Courses.Models;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace KGTT_Educate.Services.Courses.Data.Repository
@@ -16,9 +17,14 @@ namespace KGTT_Educate.Services.Courses.Data.Repository
             await _collection.ReplaceOneAsync(x => x.Id == id, lesson);
         }
 
-        public async Task<IEnumerable<Lesson>> GetByCourseId(int courseId)
+        public async Task<IEnumerable<Lesson>> GetByCourseIdAsync(int courseId)
         {
             return await _collection.Find(Builders<Lesson>.Filter.Eq(x => x.CourseId, courseId)).ToListAsync();
+        }
+
+        public async Task DeleteByCourseIdAsync(int courseId)
+        {
+            await _collection.DeleteManyAsync(x => x.CourseId == courseId);
         }
     }
 }

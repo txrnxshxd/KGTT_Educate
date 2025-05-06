@@ -1,4 +1,6 @@
-using KGTT_Educate.Services.Courses.Data.Interfaces;
+using KGTT_Educate.Services.Courses.Data.Interfaces.Repository;
+using KGTT_Educate.Services.Courses.Data.Interfaces.Services;
+using KGTT_Educate.Services.Courses.Data.Interfaces.UoW;
 using KGTT_Educate.Services.Courses.Data.Repository;
 using KGTT_Educate.Services.Courses.Data.Services;
 using KGTT_Educate.Services.Courses.Data.UoW;
@@ -40,28 +42,26 @@ builder.Services.AddSingleton<IMongoDatabase>(provider =>
     return client.GetDatabase(mongoSettings.Database);
 });
 
-builder.Services.Configure<FileStorageSettings>(builder.Configuration.GetSection("FileStorage"));
+builder.Services.Configure<CoursesFileStorageSettings>(builder.Configuration.GetSection("CoursesFileStorage"));
+builder.Services.Configure<LessonsFileStorageSettings>(builder.Configuration.GetSection("LessonsFileStorage"));
 
-// Регистрация сервиса для файлов
+// Регистрация сервиса для файлов курсов
 builder.Services.AddScoped<IFilesService>(provider =>
 {
-    var settings = provider.GetService<IOptions<FileStorageSettings>>().Value;
+    string rootPath = provider.GetService<IOptions<CoursesFileStorageSettings>>().Value.RootPath;
 
-    var fileStoragePath = Path.Combine(Directory.GetCurrentDirectory(), settings.DefaultPath);
+    var coursesStoragePath = Path.Combine(Directory.GetCurrentDirectory(), rootPath);
 
-    if (!Directory.Exists(fileStoragePath))
+    if (!Directory.Exists(coursesStoragePath))
     {
-        Directory.CreateDirectory(fileStoragePath);
+        Directory.CreateDirectory(coursesStoragePath);
     }
 
-    var mediaStoragePath = Path.Combine(Directory.GetCurrentDirectory(), settings.MediaPath);
+    rootPath = provider.GetService<IOptions<LessonsFileStorageSettings>>().Value.RootPath;
 
-    if (!Directory.Exists(mediaStoragePath))
-    {
-        Directory.CreateDirectory(mediaStoragePath);
-    }
+    var lessonsStoragePath = Path.Combine(Directory.GetCurrentDirectory(), rootPath);
 
-    return new FileService(fileStoragePath, mediaStoragePath);
+    return new FileService(coursesStoragePath, lessonsStoragePath);
 });
 
 

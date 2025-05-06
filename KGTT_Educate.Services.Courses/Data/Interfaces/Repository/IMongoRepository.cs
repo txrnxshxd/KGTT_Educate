@@ -1,4 +1,4 @@
-﻿namespace KGTT_Educate.Services.Courses.Data.Interfaces
+﻿namespace KGTT_Educate.Services.Courses.Data.Interfaces.Repository
 {
     public interface IMongoRepository<T> where T : class
     {

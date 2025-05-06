@@ -1,4 +1,5 @@
-﻿using KGTT_Educate.Services.Courses.Data.Interfaces;
+﻿using KGTT_Educate.Services.Courses.Data.Interfaces.Repository;
+using KGTT_Educate.Services.Courses.Data.Interfaces.UoW;
 using KGTT_Educate.Services.Courses.Data.Repository;
 using MongoDB.Driver;
 
