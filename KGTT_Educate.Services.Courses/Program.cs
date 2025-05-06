@@ -43,7 +43,7 @@ builder.Services.AddSingleton<IMongoDatabase>(provider =>
 builder.Services.Configure<FileStorageSettings>(builder.Configuration.GetSection("FileStorage"));
 
 // Регистрация сервиса для файлов
-builder.Services.AddScoped<IFileService>(provider =>
+builder.Services.AddScoped<IFilesService>(provider =>
 {
     var settings = provider.GetService<IOptions<FileStorageSettings>>().Value;
 
@@ -65,9 +65,9 @@ builder.Services.AddScoped<IFileService>(provider =>
 });
 
 
-builder.Services.AddScoped<ILessonRepository>(provider =>
+builder.Services.AddScoped<ILessonsRepository>(provider =>
 
-    new LessonRepository(
+    new LessonsRepository(
         provider.GetRequiredService<IMongoDatabase>()
     )
 );
@@ -84,8 +84,8 @@ builder.Services.AddScoped<ICourseFilesRepository>(provider =>
     )
 );
 
-builder.Services.AddScoped<ICourseRepository>(provider =>
-    new CourseRepository(
+builder.Services.AddScoped<ICoursesRepository>(provider =>
+    new CoursesRepository(
         provider.GetRequiredService<IMongoDatabase>()
     )
 );

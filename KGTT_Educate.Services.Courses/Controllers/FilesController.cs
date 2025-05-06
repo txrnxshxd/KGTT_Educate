@@ -13,9 +13,9 @@ namespace KGTT_Educate.Services.Courses.Controllers
     [ApiController]
     public class FilesController : ControllerBase
     {
-        private readonly IFileService _fileService;
+        private readonly IFilesService _fileService;
 
-        public FilesController(IFileService fileService)
+        public FilesController(IFilesService fileService)
         {
             _fileService = fileService;
         }

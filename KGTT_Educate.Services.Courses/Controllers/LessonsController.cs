@@ -11,10 +11,10 @@ namespace KGTT_Educate.Services.Courses.Controllers
     [ApiController]
     public class LessonsController : ControllerBase
     {
-        private readonly ILessonRepository _lessonsRepository;
+        private readonly ILessonsRepository _lessonsRepository;
         private readonly ILessonFilesRepository _lessonFile;
 
-        public LessonsController(ILessonRepository lessons, ILessonFilesRepository file)
+        public LessonsController(ILessonsRepository lessons, ILessonFilesRepository file)
         {
             _lessonsRepository = lessons;
             _lessonFile = file;

@@ -3,8 +3,8 @@
     public interface IUnitOfWork
     {
         ICourseFilesRepository CourseFiles { get; }
-        ICourseRepository Courses { get; }
+        ICoursesRepository Courses { get; }
         ILessonFilesRepository LessonFiles { get; }
-        ILessonRepository Lessons { get; }
+        ILessonsRepository Lessons { get; }
     }
 }

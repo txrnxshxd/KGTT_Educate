@@ -4,9 +4,9 @@ using MongoDB.Driver;
 
 namespace KGTT_Educate.Services.Courses.Data.Repository
 {
-    public class LessonRepository : MongoRepository<Lesson>, ILessonRepository
+    public class LessonsRepository : MongoRepository<Lesson>, ILessonsRepository
     {
-        public LessonRepository(IMongoDatabase db) : base(db)
+        public LessonsRepository(IMongoDatabase db) : base(db)
         {
 
         }
