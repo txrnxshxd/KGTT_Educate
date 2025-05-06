@@ -1,7 +1,7 @@
+using KGTT_Educate.Services.Courses.Data.Interfaces;
 using KGTT_Educate.Services.Courses.Data.Repository;
-using KGTT_Educate.Services.Courses.Data.Repository.Interfaces;
 using KGTT_Educate.Services.Courses.Data.Services;
-using KGTT_Educate.Services.Courses.Data.Services.Interfaces;
+using KGTT_Educate.Services.Courses.Data.UoW;
 using KGTT_Educate.Services.Courses.Utils;
 using Mapster;
 using MapsterMapper;
@@ -46,6 +46,7 @@ builder.Services.Configure<FileStorageSettings>(builder.Configuration.GetSection
 builder.Services.AddScoped<IFileService>(provider =>
 {
     var settings = provider.GetService<IOptions<FileStorageSettings>>().Value;
+
     var fileStoragePath = Path.Combine(Directory.GetCurrentDirectory(), settings.DefaultPath);
 
     if (!Directory.Exists(fileStoragePath))
@@ -54,13 +55,11 @@ builder.Services.AddScoped<IFileService>(provider =>
     }
 
     var mediaStoragePath = Path.Combine(Directory.GetCurrentDirectory(), settings.MediaPath);
+
     if (!Directory.Exists(mediaStoragePath))
     {
         Directory.CreateDirectory(mediaStoragePath);
     }
-
-    Console.WriteLine(settings.DefaultPath);
-    Console.WriteLine(settings.MediaPath);
 
     return new FileService(fileStoragePath, mediaStoragePath);
 });
@@ -69,31 +68,29 @@ builder.Services.AddScoped<IFileService>(provider =>
 builder.Services.AddScoped<ILessonRepository>(provider =>
 
     new LessonRepository(
-        provider.GetRequiredService<IMongoDatabase>(),
-        "Lessons"
+        provider.GetRequiredService<IMongoDatabase>()
     )
 );
 
-builder.Services.AddScoped<ILessonFilesRepository>(provider => 
+builder.Services.AddScoped<ILessonFilesRepository>(provider =>
     new LessonFilesRepository(
-        provider.GetRequiredService<IMongoDatabase>(),
-        "LessonFile"
+        provider.GetRequiredService<IMongoDatabase>()
     )
 );
 
 builder.Services.AddScoped<ICourseFilesRepository>(provider =>
     new CourseFilesRepository(
-        provider.GetRequiredService<IMongoDatabase>(),
-        "CourseFile"
+        provider.GetRequiredService<IMongoDatabase>()
     )
 );
 
 builder.Services.AddScoped<ICourseRepository>(provider =>
     new CourseRepository(
-        provider.GetRequiredService<IMongoDatabase>(),
-        "Courses"
+        provider.GetRequiredService<IMongoDatabase>()
     )
 );
+
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 var app = builder.Build();
 

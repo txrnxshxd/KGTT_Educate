@@ -1,4 +1,4 @@
-﻿using KGTT_Educate.Services.Courses.Data.Repository.Interfaces;
+﻿using KGTT_Educate.Services.Courses.Data.Interfaces;
 using KGTT_Educate.Services.Courses.Models;
 using MongoDB.Driver;
 
@@ -6,11 +6,11 @@ namespace KGTT_Educate.Services.Courses.Data.Repository
 {
     public class CourseFilesRepository : MongoRepository<CourseFile>, ICourseFilesRepository
     {
-        public CourseFilesRepository(IMongoDatabase db, string collectionName) : base(db, collectionName)
+        public CourseFilesRepository(IMongoDatabase db) : base(db)
         {
         }
 
-        public async Task<List<CourseFile>> GetByCourseIdAsync(int courseId)
+        public async Task<IEnumerable<CourseFile>> GetByCourseIdAsync(int courseId)
         {
             return await _collection.Find(Builders<CourseFile>.Filter.Eq(x => x.CourseId, courseId)).ToListAsync();
         }

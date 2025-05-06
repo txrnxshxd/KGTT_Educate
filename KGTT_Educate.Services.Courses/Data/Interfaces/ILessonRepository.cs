@@ -1,10 +1,10 @@
 ﻿using KGTT_Educate.Services.Courses.Models;
 
-namespace KGTT_Educate.Services.Courses.Data.Repository.Interfaces
+namespace KGTT_Educate.Services.Courses.Data.Interfaces
 {
     public interface ILessonRepository : IMongoRepository<Lesson>
     {
         public Task UpdateAsync(int id, Lesson course);
-        public Task<List<Lesson>> GetByCourseId(int courseId);
+        public Task<IEnumerable<Lesson>> GetByCourseId(int courseId);
     }
 }

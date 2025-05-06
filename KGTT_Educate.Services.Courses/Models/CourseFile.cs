@@ -6,9 +6,6 @@ namespace KGTT_Educate.Services.Courses.Models
     {
         public int Id { get; set; }
         public int CourseId { get; set; }
-        [ForeignKey(nameof(CourseId))]
-        public Course Course { get; set; }
-
         public string FilePath { get; set; } = string.Empty;
         public bool IsMedia;
     }

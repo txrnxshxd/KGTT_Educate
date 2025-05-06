@@ -1,4 +1,4 @@
-﻿using KGTT_Educate.Services.Courses.Data.Repository.Interfaces;
+﻿using KGTT_Educate.Services.Courses.Data.Interfaces;
 using KGTT_Educate.Services.Courses.Models;
 using KGTT_Educate.Services.Courses.Models.Dto;
 using Mapster;
@@ -13,20 +13,24 @@ namespace KGTT_Educate.Services.Courses.Controllers
     [ApiController]
     public class CoursesController : ControllerBase
     {
-        private readonly ICourseRepository _courseRepository;
+        //private readonly ICourseRepository _courseRepository;
+        //private readonly ICourseFilesRepository _courseFilesRepository;
+        private readonly IUnitOfWork _uow;
 
-        public CoursesController(ICourseRepository repo, ICourseFilesRepository files)
+        public CoursesController(IUnitOfWork uow)
         {
-            _courseRepository = repo;
+            //_courseRepository = repo;
+            //_courseFilesRepository = files;
+            _uow = uow;
         }
 
         [HttpGet]
         public async Task<ActionResult<List<Course>>> GetAll()
         {
             // ПОЛУЧАЕМ ВСЕ КУРСЫ
-            List<Course> courses = await _courseRepository.GetAllAsync();
+            IEnumerable<Course> courses = await _uow.Courses.GetAllAsync();
 
-            if (courses == null || courses.Count == 0) return NotFound();
+            if (courses == null || courses.Count() <= 0) return NotFound();
 
             return Ok(courses);
         }
@@ -36,14 +40,14 @@ namespace KGTT_Educate.Services.Courses.Controllers
         {
             if (id <= 0) return NotFound();
             
-            Course course = await _courseRepository.GetByIdAsync(id);
+            Course course = await _uow.Courses.GetByIdAsync(id);
 
             if (course == null) return NotFound();
 
             return Ok(course);
         }
 
-        [HttpGet("group/{groupId}")]
+        [HttpGet("Group/{groupId}")]
         public async Task<ActionResult<Course>> GetByGroupId(int groupId)
         {
             return Ok();
@@ -54,11 +58,11 @@ namespace KGTT_Educate.Services.Courses.Controllers
         {
             if (course == null) return BadRequest();
 
-            Course lastEl = await _courseRepository.GetLastAsync();
+            Course lastEl = await _uow.Courses.GetLastAsync();
 
             course.Id = lastEl == null ? 1 : lastEl.Id + 1;
 
-            await _courseRepository.CreateAsync(course);
+            await _uow.Courses.CreateAsync(course);
 
             return Ok(new { message = $"Курс {course.Name} успешно создан!" });
         }
@@ -70,7 +74,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
 
             try
             {
-                await _courseRepository.UpdateAsync(id, course);
+                await _uow.Courses.UpdateAsync(id, course);
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -86,7 +90,18 @@ namespace KGTT_Educate.Services.Courses.Controllers
         {
             if (id <= 0 ) return BadRequest();
 
-            await _courseRepository.DeleteAsync(id);
+            IEnumerable<CourseFile> courseFiles = await _uow.CourseFiles.GetByCourseIdAsync(id);
+
+            if (courseFiles != null && courseFiles.Count() <= 0)
+            {
+                foreach (CourseFile courseFile in courseFiles)
+                {
+                    await _uow.CourseFiles.DeleteAsync(courseFile.Id);
+                    RedirectToAction($"Delete/{courseFile.FilePath}", "FilesController");
+                }
+            }
+
+            await _uow.Courses.DeleteAsync(id);
 
             return Ok(new { message = "Курс удален" });
         }

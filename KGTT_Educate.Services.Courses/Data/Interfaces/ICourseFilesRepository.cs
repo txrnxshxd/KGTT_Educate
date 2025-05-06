@@ -1,10 +1,10 @@
 ﻿using KGTT_Educate.Services.Courses.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace KGTT_Educate.Services.Courses.Data.Repository.Interfaces
+namespace KGTT_Educate.Services.Courses.Data.Interfaces
 {
     public interface ICourseFilesRepository : IMongoRepository<CourseFile>
     {
-        public Task<List<CourseFile>> GetByCourseIdAsync(int courseId);
+        public Task<IEnumerable<CourseFile>> GetByCourseIdAsync(int courseId);
     }
 }

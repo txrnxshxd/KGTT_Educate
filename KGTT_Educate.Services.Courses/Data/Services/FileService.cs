@@ -1,4 +1,4 @@
-﻿using KGTT_Educate.Services.Courses.Data.Services.Interfaces;
+﻿using KGTT_Educate.Services.Courses.Data.Interfaces;
 
 namespace KGTT_Educate.Services.Courses.Data.Services
 {
@@ -17,7 +17,7 @@ namespace KGTT_Educate.Services.Courses.Data.Services
         {
             var targetPath = isMedia ? _mediaStoragePath : _defaultStoragePath;
 
-            var fileName = $"{Guid.NewGuid().ToString()}_{file.FileName}";
+            var fileName = $"{Guid.NewGuid().ToString()}{Path.GetExtension(file.FileName)}";
             var filePath = Path.Combine(targetPath, fileName);
 
             using (var stream = new FileStream(filePath, FileMode.Create))

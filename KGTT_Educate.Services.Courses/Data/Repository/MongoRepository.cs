@@ -1,4 +1,4 @@
-﻿using KGTT_Educate.Services.Courses.Data.Repository.Interfaces;
+﻿using KGTT_Educate.Services.Courses.Data.Interfaces;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -8,9 +8,10 @@ namespace KGTT_Educate.Services.Courses.Data.Repository
     {
         protected readonly IMongoCollection<T> _collection;
 
-        public MongoRepository(IMongoDatabase db, string collectionName)
+        public MongoRepository(IMongoDatabase db)
         {
-            _collection = db.GetCollection<T>(collectionName);
+            _collection = db.GetCollection<T>(typeof(T).Name + "s");
+            Console.WriteLine(typeof(T).Name + "s");
         }
 
         public async Task CreateAsync(T entity)
@@ -23,7 +24,7 @@ namespace KGTT_Educate.Services.Courses.Data.Repository
             await _collection.DeleteOneAsync(Builders<T>.Filter.Eq("Id", id));
         }
 
-        public async Task<List<T>> GetAllAsync()
+        public async Task<IEnumerable<T>> GetAllAsync()
         {
             return await _collection.Find(_ => true).ToListAsync();
         }

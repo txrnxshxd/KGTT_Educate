@@ -1,6 +1,6 @@
 ﻿using KGTT_Educate.Services.Courses.Utils;
 
-namespace KGTT_Educate.Services.Courses.Data.Services.Interfaces
+namespace KGTT_Educate.Services.Courses.Data.Interfaces
 {
     public interface IFileService
     {

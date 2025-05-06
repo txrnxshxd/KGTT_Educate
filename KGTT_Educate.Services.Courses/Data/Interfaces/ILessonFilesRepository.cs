@@ -1,9 +1,9 @@
 ﻿using KGTT_Educate.Services.Courses.Models;
 
-namespace KGTT_Educate.Services.Courses.Data.Repository.Interfaces
+namespace KGTT_Educate.Services.Courses.Data.Interfaces
 {
     public interface ILessonFilesRepository : IMongoRepository<LessonFile>
     {
-        public Task<List<LessonFile>> GetByLessonIdAsync(int lessonId);
+        public Task<IEnumerable<LessonFile>> GetByLessonIdAsync(int lessonId);
     }
 }

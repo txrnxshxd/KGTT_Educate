@@ -1,4 +1,4 @@
-﻿using KGTT_Educate.Services.Courses.Data.Repository.Interfaces;
+﻿using KGTT_Educate.Services.Courses.Data.Interfaces;
 using KGTT_Educate.Services.Courses.Models;
 using KGTT_Educate.Services.Courses.Models.Dto;
 using Mapster;
@@ -23,9 +23,9 @@ namespace KGTT_Educate.Services.Courses.Controllers
         [HttpGet]
         public async Task<ActionResult<List<Lesson>>> GetAll()
         {
-            List<Lesson> lessons = await _lessonsRepository.GetAllAsync();
+            IEnumerable<Lesson> lessons = await _lessonsRepository.GetAllAsync();
 
-            if (lessons == null || lessons.Count <= 0) return NotFound();
+            if (lessons == null || lessons.Count() <= 0) return NotFound();
 
             return Ok(lessons);
         }
@@ -47,13 +47,13 @@ namespace KGTT_Educate.Services.Courses.Controllers
         }
 
         [HttpGet("Files/{lessonId}")]
-        public async Task<ActionResult<List<CourseFile>>> GetLessonFiles(int lessonId)
+        public async Task<ActionResult<IEnumerable<CourseFile>>> GetLessonFiles(int lessonId)
         {
             if (lessonId <= 0) return NotFound();
 
-            List<LessonFile> courseFilesList = await _lessonFile.GetByLessonIdAsync(lessonId);
+            IEnumerable<LessonFile> courseFilesList = await _lessonFile.GetByLessonIdAsync(lessonId);
 
-            if (courseFilesList == null || courseFilesList.Count <= 0) return NotFound();
+            if (courseFilesList == null || courseFilesList.Count() <= 0) return NotFound();
 
             List<LessonFileDTO> courseFilesDTO = courseFilesList.Adapt<List<LessonFileDTO>>();
 
