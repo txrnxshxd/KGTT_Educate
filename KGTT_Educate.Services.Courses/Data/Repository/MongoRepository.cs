@@ -11,7 +11,6 @@ namespace KGTT_Educate.Services.Courses.Data.Repository
         public MongoRepository(IMongoDatabase db)
         {
             _collection = db.GetCollection<T>(typeof(T).Name + "s");
-            Console.WriteLine(typeof(T).Name + "s");
         }
 
         public async Task CreateAsync(T entity)

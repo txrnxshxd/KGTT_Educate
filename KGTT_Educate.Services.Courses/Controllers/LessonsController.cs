@@ -6,6 +6,7 @@ using KGTT_Educate.Services.Courses.Utils;
 using Mapster;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Runtime.CompilerServices;
 
 namespace KGTT_Educate.Services.Courses.Controllers
 {
@@ -65,15 +66,11 @@ namespace KGTT_Educate.Services.Courses.Controllers
         [HttpGet("Files/{lessonId}")]
         public async Task<ActionResult<IEnumerable<LessonFile>>> GetLessonFiles(int lessonId)
         {
-            if (lessonId <= 0) return NotFound();
+            IEnumerable<LessonFile> files = await _uow.LessonFiles.GetByLessonIdAsync(lessonId);
 
-            IEnumerable<LessonFile> courseFilesList = await _uow.LessonFiles.GetByLessonIdAsync(lessonId);
+            if (files == null || files.Count() == 0) return NotFound(new { Message = "Не найдено" });
 
-            if (courseFilesList == null || courseFilesList.Count() <= 0) return NotFound();
-
-            List<LessonFileDTO> courseFilesDTO = courseFilesList.Adapt<List<LessonFileDTO>>();
-
-            return Ok(courseFilesDTO);
+            return Ok(files);
         }
 
         [HttpPost]
@@ -124,11 +121,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
                 foreach (LessonFile lessonFile in lessonFiles)
                 {
 
-                    bool isMedia = AllowedFileExtensions.mediaExtensions.Contains(Path.GetExtension(lessonFile.FilePath));
-
-                    string directory = isMedia ? "Media" : "Files";
-
-                    string fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Lessons", directory, lessonFile.FilePath);
+                    string fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", lessonFile.LocalFilePath);
 
                     await _fileService.DeleteFileAsync(fullPath);
                 }
@@ -143,8 +136,8 @@ namespace KGTT_Educate.Services.Courses.Controllers
             return Ok(new { message = $"Урок удален" });
         }
 
-        [HttpPost("Files/Upload/{lessonId}")]
-        public async Task<ActionResult> UploadFile(int lessonId, IFormFile file)
+        [HttpPost("Files/{lessonId}")]
+        public async Task<ActionResult> UploadFile(int lessonId, IFormFile file, bool isPinned = false)
         {
             Lesson lesson = await _uow.Lessons.GetByIdAsync(lessonId);
 
@@ -167,7 +160,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
 
                 // ОТНОСИТЕЛЬНЫЙ ПУТЬ
                 // RELATIVE PATH
-                var wwwrootPath = Path.GetRelativePath(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Lessons"), filePath);
+                var wwwrootPath = Path.GetRelativePath(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), filePath);
 
                 LessonFile lastFile = await _uow.LessonFiles.GetLastAsync();
 
@@ -175,14 +168,25 @@ namespace KGTT_Educate.Services.Courses.Controllers
                 {
                     Id = lastFile == null ? 1 : lastFile.Id + 1,
                     LessonId = lessonId,
-                    FilePath = fileName,
+                    OriginalName = file.FileName,
+                    FileName = fileName,
+                    FullFilePath = filePath,
+                    LocalFilePath = wwwrootPath,
                     IsMedia = isMedia,
                     Lesson = lesson,
+                    IsPinned = isMedia ? isPinned : true // Медиафайлы могут быть и на UI, и как прикрепленный файл, остальные будут помечены как прикрепленный файл
                 };
 
                 await _uow.LessonFiles.CreateAsync(lessonFile);
 
-                return Ok(new { WwwrootPath = wwwrootPath, FileName = fileName, IsMedia = isMedia });
+                return Ok(new { 
+                    WwwrootPath = wwwrootPath,
+                    FileName = fileName, 
+                    IsMedia = isMedia, 
+                    FilePath = filePath,
+                    OriginalName = file.FileName,
+                    IsPinned = lessonFile.IsPinned 
+                });
             }
             catch (Exception ex)
             {
@@ -191,22 +195,46 @@ namespace KGTT_Educate.Services.Courses.Controllers
             }
         }
 
-        [HttpDelete("Files/Delete/{fileId}")]
+        [HttpGet("Files/Download/{fileId}")]
+        public async Task<ActionResult> DownloadFile(int fileId)
+        {
+            if (fileId <= 0) return BadRequest();
+
+            LessonFile file = await _uow.LessonFiles.GetByIdAsync(fileId);
+
+            // ПОЛНЫЙ ПУТЬ
+            // FULL PATH
+            string fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", file.LocalFilePath);
+
+            try
+            {
+                // ПРОБУЕМ СКАЧАТЬ ФАЙЛ
+                // TRY TO DOWNLOAD FILE
+                await _fileService.DownloadFileAsync(fullPath, HttpContext.Response);
+                return new EmptyResult();
+            }
+            catch (FileNotFoundException)
+            {
+                // ЕСЛИ НЕ НАШЛИ, КИДАЕМ NF
+                // IF FILE WASN'T FOUND, THROW NOT FOUND
+                return NotFound();
+            }
+        }
+
+        [HttpDelete("Files/{fileId}")]
         public async Task<ActionResult> DeleteFile(int fileId)
         {
             LessonFile file = await _uow.LessonFiles.GetByIdAsync(fileId);
 
             if (file == null) return NotFound();
 
-            string directory = file.IsMedia ? "Media" : "Files";
-
-            string fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Lessons", directory, file.FilePath);
+            string fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", file.LocalFilePath);
 
             await _fileService.DeleteFileAsync(fullPath);
 
             await _uow.LessonFiles.DeleteAsync(fileId);
 
-            return Ok(new { FilePath = fullPath, FileName = file.FilePath });
+            return Ok(new { FilePath = fullPath, FileName = file.FileName });
         }
     }
 }

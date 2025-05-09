@@ -45,7 +45,7 @@ builder.Services.AddSingleton<IMongoDatabase>(provider =>
 builder.Services.Configure<CoursesFileStorageSettings>(builder.Configuration.GetSection("CoursesFileStorage"));
 builder.Services.Configure<LessonsFileStorageSettings>(builder.Configuration.GetSection("LessonsFileStorage"));
 
-// Регистрация сервиса для файлов курсов
+// Регистрация сервиса для файлов
 builder.Services.AddScoped<IFileService>(provider =>
 {
     string rootPath = provider.GetService<IOptions<CoursesFileStorageSettings>>().Value.RootPath;

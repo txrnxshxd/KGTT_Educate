@@ -66,19 +66,15 @@ namespace KGTT_Educate.Services.Courses.Controllers
 
             CourseFile file = await _uow.CourseFiles.GetByIdAsync(fileId);
 
-            bool isMedia = AllowedFileExtensions.mediaExtensions.Contains(Path.GetExtension(file.FilePath));
-
-            string directory = isMedia ? "Media" : "Files";
             // ПОЛНЫЙ ПУТЬ
             // FULL PATH
-            string fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Courses", directory, file.FilePath);
+            string fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", file.LocalFilePath);
 
             try
             {
                 // ПРОБУЕМ СКАЧАТЬ ФАЙЛ
                 // TRY TO DOWNLOAD FILE
                 await _fileService.DownloadFileAsync(fullPath, HttpContext.Response);
-                Console.WriteLine(fullPath);
                 return new EmptyResult();
             }
             catch (FileNotFoundException)
@@ -89,14 +85,14 @@ namespace KGTT_Educate.Services.Courses.Controllers
             }
         }
 
-        [HttpGet("Files/GetByCourseId/{courseId}")]
+        [HttpGet("Files/{courseId}")]
         public async Task<ActionResult> GetFilesByCourseId(int courseId)
         {
             IEnumerable<CourseFile> files = await _uow.CourseFiles.GetByCourseIdAsync(courseId);
 
             if (files == null || files.Count() == 0) return NotFound(new { Message = "Не найдено" });
 
-            return Ok(files);
+            return Ok(files.Adapt<IEnumerable<CourseFileDTO>>());
         }
 
         [HttpPost]
@@ -176,11 +172,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
                 foreach (CourseFile courseFile in courseFiles)
                 {
 
-                    bool isMedia = AllowedFileExtensions.mediaExtensions.Contains(Path.GetExtension(courseFile.FilePath));
-
-                    string directory = isMedia ? "Media" : "Files";
-
-                    string fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Courses", directory, courseFile.FilePath);
+                    string fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", courseFile.LocalFilePath);
 
                     await _fileService.DeleteFileAsync(fullPath);
                 }
@@ -193,11 +185,8 @@ namespace KGTT_Educate.Services.Courses.Controllers
             {
                 foreach (LessonFile lessonFile in lessonFiles)
                 {
-                    bool isMedia = AllowedFileExtensions.mediaExtensions.Contains(Path.GetExtension(lessonFile.FilePath));
 
-                    string directory = isMedia ? "Media" : "Files";
-
-                    string fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Lessons", directory, lessonFile.FilePath);
+                    string fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", lessonFile.LocalFilePath);
 
                     await _fileService.DeleteFileAsync(fullPath);
                 }
@@ -216,8 +205,8 @@ namespace KGTT_Educate.Services.Courses.Controllers
         }
 
 
-        [HttpPost("Files/Upload/{courseId}")]
-        public async Task<ActionResult> UploadFile(int courseId, IFormFile file)
+        [HttpPost("Files/{courseId}")]
+        public async Task<ActionResult> UploadFile(int courseId, IFormFile file, bool isPinned = false)
         {
             Course course = await _uow.Courses.GetByIdAsync(courseId);
 
@@ -240,7 +229,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
 
                 // ОТНОСИТЕЛЬНЫЙ ПУТЬ
                 // RELATIVE PATH
-                var wwwrootPath = Path.GetRelativePath(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Courses"), filePath);
+                var wwwrootPath = Path.GetRelativePath(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), filePath);
 
                 CourseFile lastFile = await _uow.CourseFiles.GetLastAsync();
 
@@ -248,14 +237,25 @@ namespace KGTT_Educate.Services.Courses.Controllers
                 {
                     Id = lastFile == null ? 1 : lastFile.Id + 1,
                     CourseId = courseId,
-                    FilePath = fileName,
+                    OriginalName = file.FileName,
+                    FileName = fileName,
+                    FullFilePath = filePath,
+                    LocalFilePath = wwwrootPath,
                     IsMedia = isMedia,
-                    Course = course
+                    Course = course,
+                    IsPinned = isMedia ? isPinned : true // Медиафайлы могут быть и на UI, и как прикрепленный файл, остальные будут помечены как прикрепленный файл
                 };
 
                 await _uow.CourseFiles.CreateAsync(courseFile);
 
-                return Ok(new { WwwrootPath = wwwrootPath, FileName = fileName, IsMedia = isMedia });
+                return Ok(new { 
+                    WwwrootPath = wwwrootPath, 
+                    FileName = fileName, 
+                    IsMedia = isMedia, 
+                    FilePath = filePath, 
+                    OriginalName = courseFile.OriginalName, 
+                    IsPinned = courseFile.IsPinned
+                });
             }
             catch (Exception ex)
             {
@@ -264,22 +264,20 @@ namespace KGTT_Educate.Services.Courses.Controllers
             }
         }
 
-        [HttpDelete("Files/Delete/{fileId}")]
+        [HttpDelete("Files/{fileId}")]
         public async Task<ActionResult> DeleteFile(int fileId)
         {
             CourseFile file = await _uow.CourseFiles.GetByIdAsync(fileId);
 
             if (file == null) return NotFound();
 
-            string directory = file.IsMedia ? "Media" : "Files";
-
-            string fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Courses", directory, file.FilePath);
+            string fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", file.LocalFilePath);
 
             await _fileService.DeleteFileAsync(fullPath);
 
             await _uow.CourseFiles.DeleteAsync(fileId);
 
-            return Ok(new { FilePath = fullPath, FileName = file.FilePath });
+            return Ok(new { FilePath = fullPath, FileName = file.FileName });
         }
     }
 }
