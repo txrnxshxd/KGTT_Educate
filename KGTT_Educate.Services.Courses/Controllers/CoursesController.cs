@@ -20,9 +20,9 @@ namespace KGTT_Educate.Services.Courses.Controllers
         //private readonly ICourseRepository _courseRepository;
         //private readonly ICourseFilesRepository _courseFilesRepository;
         private readonly IUnitOfWork _uow;
-        private readonly IFilesService _fileService;
+        private readonly IFileService _fileService;
 
-        public CoursesController(IUnitOfWork uow, IFilesService fileService)
+        public CoursesController(IUnitOfWork uow, IFileService fileService)
         {
             //_courseRepository = repo;
             //_courseFilesRepository = files;
@@ -100,30 +100,31 @@ namespace KGTT_Educate.Services.Courses.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Course>> Create([FromBody] Course course, IFormFile? file)
+        public async Task<ActionResult<CourseRequest>> Create([FromForm] CourseRequest courseRequest)
         {
-            if (course == null) return BadRequest();
+            if (courseRequest == null) return BadRequest();
 
             Course lastEl = await _uow.Courses.GetLastAsync();
 
-            course.Id = lastEl == null ? 1 : lastEl.Id + 1;
+            Course course = new Course
+            {
+                Id = lastEl == null ? 1 : lastEl.Id + 1,
+                Name = courseRequest.Name,
+                Description = courseRequest.Description
+            };
 
-            await _uow.Courses.CreateAsync(course);
-
-            if (file != null)
+            if (courseRequest.FormFile != null)
             {
                 try
                 {
                     // ПОЛУЧАЕМ РАСШИРЕНИЕ ПРЕДОСТАВЛЕННОГО ФАЙЛА
                     // GET PROVIDED FILE EXTENSION
-                    string fileExt = Path.GetExtension(file.FileName).ToLowerInvariant();
+                    string fileExt = Path.GetExtension(courseRequest.FormFile.FileName).ToLowerInvariant();
 
-                    if (!AllowedFileExtensions.fileExtensions.Contains(fileExt) && !AllowedFileExtensions.mediaExtensions.Contains(fileExt))
-                        return BadRequest(new { Message = $"Вы не можете загрузить файл с расширением {fileExt}" });
+                    if (!AllowedFileExtensions.mediaExtensions.Contains(fileExt))
+                        return BadRequest(new { Message = $"Вы не можете загрузить превью с расширением {fileExt}" });
 
-                    bool isMedia = AllowedFileExtensions.mediaExtensions.Contains(fileExt);
-
-                    string filePath = await _fileService.UploadFileAsync(file, false, isMedia);
+                    string filePath = await _fileService.UploadMediaAsync(courseRequest.FormFile, false);
 
                     string fileName = Path.GetFileName(filePath);
 
@@ -131,7 +132,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
                     // RELATIVE PATH
                     var wwwrootPath = Path.GetRelativePath(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), filePath);
 
-                    return Ok(new { WwwrootPath = wwwrootPath, FileName = fileName, IsMedia = isMedia });
+                    course.PreviewPhotoPath = fileName;
                 }
                 catch (Exception ex)
                 {
@@ -139,6 +140,8 @@ namespace KGTT_Educate.Services.Courses.Controllers
                     return StatusCode(500, ex.Message);
                 }
             }
+
+            await _uow.Courses.CreateAsync(course);
 
             return Ok(new { message = $"Курс {course.Name} успешно создан!" });
         }
@@ -268,9 +271,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
 
             if (file == null) return NotFound();
 
-            bool isMedia = AllowedFileExtensions.mediaExtensions.Contains(Path.GetExtension(file.FilePath));
-
-            string directory = isMedia ? "Media" : "Files";
+            string directory = file.IsMedia ? "Media" : "Files";
 
             string fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Courses", directory, file.FilePath);
 

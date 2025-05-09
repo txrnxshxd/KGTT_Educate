@@ -6,9 +6,6 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Frontend", "Frontend", "{82BEDB81-05CE-46D0-92EE-186A010230AC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Gateway", "Gateway", "{231D9DF4-92DF-42FA-A5A6-B52A4D3FDFC0}"
-	ProjectSection(SolutionItems) = preProject
-		ocelot.json = ocelot.json
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Integration", "Integration", "{585BF90B-AF63-4D0F-A4D5-CD4DBF696CAF}"
 EndProject
@@ -27,6 +24,11 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KGTT_Educate.Services.Account", "KGTT_Educate.Services.Account\KGTT_Educate.Services.Account.csproj", "{C59BD831-1E40-403E-AF5C-C16BB2E5E238}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KGTT_Educate.Services.Groups", "KGTT_Educate.Services.Groups\KGTT_Educate.Services.Groups.csproj", "{2376C155-4954-46C2-9FF1-B02A49B1C6EE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "KGTT_Educate.Gateway", "KGTT_Educate.Gateway", "{F3EDDDCD-F533-4516-8B0E-38C5D3046F6E}"
+	ProjectSection(SolutionItems) = preProject
+		ocelot.json = ocelot.json
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -74,5 +76,6 @@ Global
 		{36690A07-4804-4F28-8497-02253EA7BDE7} = {B8AF1ECE-E708-4552-A1AE-7842E184E02B}
 		{C59BD831-1E40-403E-AF5C-C16BB2E5E238} = {B8AF1ECE-E708-4552-A1AE-7842E184E02B}
 		{2376C155-4954-46C2-9FF1-B02A49B1C6EE} = {B8AF1ECE-E708-4552-A1AE-7842E184E02B}
+		{F3EDDDCD-F533-4516-8B0E-38C5D3046F6E} = {231D9DF4-92DF-42FA-A5A6-B52A4D3FDFC0}
 	EndGlobalSection
 EndGlobal

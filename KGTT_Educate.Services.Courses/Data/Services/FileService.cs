@@ -2,7 +2,7 @@
 
 namespace KGTT_Educate.Services.Courses.Data.Services
 {
-    public class FileService : IFilesService
+    public class FileService : IFileService
     {
         private readonly string _coursesStoragePath;
         private readonly string _lessonsStoragePath;

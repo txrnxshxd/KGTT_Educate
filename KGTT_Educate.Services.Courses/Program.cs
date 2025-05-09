@@ -46,7 +46,7 @@ builder.Services.Configure<CoursesFileStorageSettings>(builder.Configuration.Get
 builder.Services.Configure<LessonsFileStorageSettings>(builder.Configuration.GetSection("LessonsFileStorage"));
 
 // Регистрация сервиса для файлов курсов
-builder.Services.AddScoped<IFilesService>(provider =>
+builder.Services.AddScoped<IFileService>(provider =>
 {
     string rootPath = provider.GetService<IOptions<CoursesFileStorageSettings>>().Value.RootPath;
 

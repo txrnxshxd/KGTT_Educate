@@ -2,7 +2,7 @@
 
 namespace KGTT_Educate.Services.Courses.Data.Interfaces.Services
 {
-    public interface IFilesService
+    public interface IFileService
     {
         Task DownloadFileAsync(string filePath, HttpResponse response);
         Task<string> UploadFileAsync(IFormFile file, bool isLesson, bool isMedia);

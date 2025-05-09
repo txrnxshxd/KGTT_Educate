@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using KGTT_Educate.Services.Courses.Models.Dto;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KGTT_Educate.Services.Courses.Models
 {
