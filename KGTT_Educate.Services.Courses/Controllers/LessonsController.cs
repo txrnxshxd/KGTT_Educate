@@ -1,7 +1,5 @@
-﻿using KGTT_Educate.Services.Courses.Data.Interfaces.Repository;
-using KGTT_Educate.Services.Courses.Data.Interfaces.Services;
+﻿using KGTT_Educate.Services.Courses.Data.Interfaces.Services;
 using KGTT_Educate.Services.Courses.Data.Interfaces.UoW;
-using KGTT_Educate.Services.Courses.Data.Services;
 using KGTT_Educate.Services.Courses.Models;
 using KGTT_Educate.Services.Courses.Models.Dto;
 using KGTT_Educate.Services.Courses.Utils;
@@ -59,7 +57,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
 
             IEnumerable<Lesson> lessons = await _uow.Lessons.GetByCourseIdAsync(courseId);
 
-            if (lessons == null) return NotFound();
+            if (lessons == null || lessons.Count() == 0) return NotFound();
 
             return Ok(lessons);
         }
