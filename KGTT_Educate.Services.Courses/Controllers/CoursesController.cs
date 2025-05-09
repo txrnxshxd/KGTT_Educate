@@ -122,13 +122,12 @@ namespace KGTT_Educate.Services.Courses.Controllers
 
                     string filePath = await _fileService.UploadMediaAsync(courseRequest.FormFile, false);
 
-                    string fileName = Path.GetFileName(filePath);
-
                     // ОТНОСИТЕЛЬНЫЙ ПУТЬ
                     // RELATIVE PATH
                     var wwwrootPath = Path.GetRelativePath(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), filePath);
 
-                    course.PreviewPhotoPath = fileName;
+                    course.PreviewPhotoPath = filePath;
+                    course.LocalPreviewPhotoPath = wwwrootPath;
                 }
                 catch (Exception ex)
                 {

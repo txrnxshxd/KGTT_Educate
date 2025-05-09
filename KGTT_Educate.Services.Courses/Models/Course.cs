@@ -6,5 +6,6 @@
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string? PreviewPhotoPath { get; set; }
+        public string? LocalPreviewPhotoPath { get; set; }
     }
 }
