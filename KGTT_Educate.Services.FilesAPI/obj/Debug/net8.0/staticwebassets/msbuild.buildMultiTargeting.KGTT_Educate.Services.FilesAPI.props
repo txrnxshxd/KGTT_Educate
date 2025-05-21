@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\build\KGTT_Educate.Services.FilesAPI.props" />
-</Project>

@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\buildMultiTargeting\KGTT_Educate.Services.Files.props" />
-</Project>
