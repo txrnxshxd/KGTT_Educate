@@ -23,12 +23,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KGTT_Educate.Services.TgAPI
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KGTT_Educate.Services.Account", "KGTT_Educate.Services.Account\KGTT_Educate.Services.Account.csproj", "{C59BD831-1E40-403E-AF5C-C16BB2E5E238}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KGTT_Educate.Services.Groups", "KGTT_Educate.Services.Groups\KGTT_Educate.Services.Groups.csproj", "{2376C155-4954-46C2-9FF1-B02A49B1C6EE}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "KGTT_Educate.Gateway", "KGTT_Educate.Gateway", "{F3EDDDCD-F533-4516-8B0E-38C5D3046F6E}"
 	ProjectSection(SolutionItems) = preProject
 		ocelot.json = ocelot.json
 	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KGTT_Educate.Services.FilesAPI", "KGTT_Educate.Services.Files\KGTT_Educate.Services.FilesAPI.csproj", "{6C753963-9466-4317-8920-20A418FC0A9F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -60,10 +60,10 @@ Global
 		{C59BD831-1E40-403E-AF5C-C16BB2E5E238}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C59BD831-1E40-403E-AF5C-C16BB2E5E238}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C59BD831-1E40-403E-AF5C-C16BB2E5E238}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6C753963-9466-4317-8920-20A418FC0A9F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6C753963-9466-4317-8920-20A418FC0A9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6C753963-9466-4317-8920-20A418FC0A9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6C753963-9466-4317-8920-20A418FC0A9F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2376C155-4954-46C2-9FF1-B02A49B1C6EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2376C155-4954-46C2-9FF1-B02A49B1C6EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2376C155-4954-46C2-9FF1-B02A49B1C6EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2376C155-4954-46C2-9FF1-B02A49B1C6EE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -75,7 +75,7 @@ Global
 		{3683C986-C782-429D-81CD-1101FA715AA6} = {B8AF1ECE-E708-4552-A1AE-7842E184E02B}
 		{36690A07-4804-4F28-8497-02253EA7BDE7} = {B8AF1ECE-E708-4552-A1AE-7842E184E02B}
 		{C59BD831-1E40-403E-AF5C-C16BB2E5E238} = {B8AF1ECE-E708-4552-A1AE-7842E184E02B}
+		{2376C155-4954-46C2-9FF1-B02A49B1C6EE} = {B8AF1ECE-E708-4552-A1AE-7842E184E02B}
 		{F3EDDDCD-F533-4516-8B0E-38C5D3046F6E} = {231D9DF4-92DF-42FA-A5A6-B52A4D3FDFC0}
-		{6C753963-9466-4317-8920-20A418FC0A9F} = {B8AF1ECE-E708-4552-A1AE-7842E184E02B}
 	EndGlobalSection
 EndGlobal

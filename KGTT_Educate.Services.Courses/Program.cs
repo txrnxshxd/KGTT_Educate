@@ -92,8 +92,6 @@ builder.Services.AddScoped<ICoursesRepository>(provider =>
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-builder.Services.AddHttpClient();
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
