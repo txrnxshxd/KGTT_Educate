@@ -1,5 +1,4 @@
 ﻿using KGTT_Educate.Services.Courses.Models;
-using KGTT_Educate.Services.Courses.Models.Dto;
 
 namespace KGTT_Educate.Services.Courses.Data.Interfaces.Repository
 {

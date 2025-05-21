@@ -1,6 +1,5 @@
 ﻿using KGTT_Educate.Services.Account.Data.Repository.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using RabbitMQ.Client;
 using System.Linq.Expressions;
 
 namespace KGTT_Educate.Services.Account.Data.Repository
@@ -55,7 +54,7 @@ namespace KGTT_Educate.Services.Account.Data.Repository
 
             if (!string.IsNullOrEmpty(includeProperties))
             {
-                foreach (var property in includeProperties.Split(new char[] {','}, StringSplitOptions.RemoveEmptyEntries))
+                foreach (var property in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
                 {
                     query = query.Include(property);
                 }

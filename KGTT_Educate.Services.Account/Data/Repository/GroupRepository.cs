@@ -1,7 +1,5 @@
 ﻿using KGTT_Educate.Services.Account.Data.Repository.Interfaces;
 using KGTT_Educate.Services.Account.Models;
-using Microsoft.EntityFrameworkCore;
-using RabbitMQ.Client;
 
 namespace KGTT_Educate.Services.Account.Data.Repository
 {

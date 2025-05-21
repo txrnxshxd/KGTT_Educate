@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-
-namespace KGTT_Educate.Services.Courses.Models
+﻿namespace KGTT_Educate.Services.Courses.Models
 {
     public class Lesson
     {

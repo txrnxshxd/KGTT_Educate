@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-
-namespace KGTT_Educate.Services.Account.Models.Dto
+﻿namespace KGTT_Educate.Services.Account.Models.Dto
 {
     public class UserRoleDTO
     {

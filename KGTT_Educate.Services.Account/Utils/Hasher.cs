@@ -1,5 +1,4 @@
-﻿using KGTT_Educate.Services.Account.Models;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 
 namespace KGTT_Educate.Services.Account.Utils

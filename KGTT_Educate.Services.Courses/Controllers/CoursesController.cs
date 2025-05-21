@@ -1,15 +1,10 @@
 ﻿using KGTT_Educate.Services.Courses.Data.Interfaces.Services;
 using KGTT_Educate.Services.Courses.Data.Interfaces.UoW;
-using KGTT_Educate.Services.Courses.Data.Services;
 using KGTT_Educate.Services.Courses.Models;
 using KGTT_Educate.Services.Courses.Models.Dto;
-using KGTT_Educate.Services.Courses.Utils;
-using Mapster;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MongoDB.Driver;
-using System.Reflection.Emit;
 
 namespace KGTT_Educate.Services.Courses.Controllers
 {
@@ -49,7 +44,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
         public async Task<ActionResult<Course>> GetById(int id)
         {
             if (id <= 0) return NotFound();
-            
+
             Course course = await _uow.Courses.GetByIdAsync(id);
 
             if (course == null) return NotFound();
@@ -70,7 +65,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
         [HttpGet("Files/Download/{fileId}")]
         public async Task<ActionResult> DownloadFile(int fileId)
         {
-            if (fileId <= 0 ) return BadRequest();
+            if (fileId <= 0) return BadRequest();
 
             CourseFile file = await _uow.CourseFiles.GetByIdAsync(fileId);
 
@@ -156,7 +151,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
         [HttpDelete]
         public async Task<ActionResult> Delete(int id)
         {
-            if (id <= 0 ) return BadRequest();
+            if (id <= 0) return BadRequest();
 
             IEnumerable<CourseFile> courseFiles = await _uow.CourseFiles.GetByCourseIdAsync(id);
 

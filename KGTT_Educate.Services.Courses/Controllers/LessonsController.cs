@@ -1,12 +1,9 @@
 ﻿using KGTT_Educate.Services.Courses.Data.Interfaces.Services;
 using KGTT_Educate.Services.Courses.Data.Interfaces.UoW;
 using KGTT_Educate.Services.Courses.Models;
-using KGTT_Educate.Services.Courses.Models.Dto;
 using KGTT_Educate.Services.Courses.Utils;
-using Mapster;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Runtime.CompilerServices;
 
 namespace KGTT_Educate.Services.Courses.Controllers
 {
@@ -84,7 +81,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
 
             Course course = await _uow.Courses.GetByIdAsync(lesson.CourseId);
 
-            if (course == null ) return NotFound(new { Message = $"Курс с Id {lesson.CourseId} не существует"});
+            if (course == null) return NotFound(new { Message = $"Курс с Id {lesson.CourseId} не существует" });
 
             await _uow.Lessons.CreateAsync(lesson);
 
@@ -179,13 +176,14 @@ namespace KGTT_Educate.Services.Courses.Controllers
 
                 await _uow.LessonFiles.CreateAsync(lessonFile);
 
-                return Ok(new { 
+                return Ok(new
+                {
                     WwwrootPath = wwwrootPath,
-                    FileName = fileName, 
-                    IsMedia = isMedia, 
+                    FileName = fileName,
+                    IsMedia = isMedia,
                     FilePath = filePath,
                     OriginalName = file.FileName,
-                    IsPinned = lessonFile.IsPinned 
+                    IsPinned = lessonFile.IsPinned
                 });
             }
             catch (Exception ex)

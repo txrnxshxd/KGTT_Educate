@@ -2,7 +2,6 @@
 using KGTT_Educate.Services.Account.Models;
 using KGTT_Educate.Services.Account.Models.Dto;
 using Mapster;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KGTT_Educate.Services.Account.Controllers

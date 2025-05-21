@@ -1,9 +1,9 @@
 ﻿using KGTT_Educate.Services.Account.Data.Repository.Interfaces;
 using KGTT_Educate.Services.Account.Models;
-using Microsoft.AspNetCore.Mvc;
-using KGTT_Educate.Services.Account.Utils;
 using KGTT_Educate.Services.Account.Models.Dto;
+using KGTT_Educate.Services.Account.Utils;
 using Mapster;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 

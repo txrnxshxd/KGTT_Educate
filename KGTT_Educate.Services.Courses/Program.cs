@@ -7,7 +7,6 @@ using KGTT_Educate.Services.Courses.Data.UoW;
 using KGTT_Educate.Services.Courses.Utils;
 using Mapster;
 using MapsterMapper;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 

@@ -1,5 +1,4 @@
 ﻿using KGTT_Educate.Services.Courses.Data.Interfaces.Repository;
-using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace KGTT_Educate.Services.Courses.Data.Repository

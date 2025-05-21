@@ -16,7 +16,7 @@ namespace KGTT_Educate.Services.Courses.Data.Services
         public async Task<string> UploadFileAsync(IFormFile file, bool isLesson = false, bool isMedia = false)
         {
             string directory = isLesson ? _lessonsStoragePath : _coursesStoragePath;
-            
+
             string fileName = $"{Guid.NewGuid().ToString()}{Path.GetExtension(file.FileName)}";
 
             string filesDirectory = isMedia ? Path.Combine(directory, "Media") : Path.Combine(directory, "Files");

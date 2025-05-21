@@ -1,5 +1,4 @@
 ﻿using KGTT_Educate.Services.Account.Data.Repository.Interfaces;
-using KGTT_Educate.Services.Account.Models;
 
 namespace KGTT_Educate.Services.Account.Data.Repository
 {
@@ -9,11 +8,11 @@ namespace KGTT_Educate.Services.Account.Data.Repository
 
         public IGroupRepository Groups { get; private set; }
 
-        public IRoleRepository Roles {  get; private set; }
+        public IRoleRepository Roles { get; private set; }
 
-        public IUserGroupRepository UserGroup {  get; private set; }
+        public IUserGroupRepository UserGroup { get; private set; }
 
-        public IUserRepository Users {  get; private set; }
+        public IUserRepository Users { get; private set; }
 
         public IUserRoleRepository UserRole { get; private set; }
 
