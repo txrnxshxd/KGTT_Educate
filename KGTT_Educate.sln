@@ -28,7 +28,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "KGTT_Educate.Gateway", "KGT
 		ocelot.json = ocelot.json
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KGTT_Educate.Services.FilesAPI", "KGTT_Educate.Services.Files\KGTT_Educate.Services.FilesAPI.csproj", "{6C753963-9466-4317-8920-20A418FC0A9F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KGTT_Educate.Services.FilesAPI", "KGTT_Educate.Services.FilesAPI\KGTT_Educate.Services.FilesAPI.csproj", "{6C753963-9466-4317-8920-20A418FC0A9F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
