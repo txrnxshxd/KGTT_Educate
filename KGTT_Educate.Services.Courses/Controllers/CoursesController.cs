@@ -21,14 +21,17 @@ namespace KGTT_Educate.Services.Courses.Controllers
         //private readonly ICourseFilesRepository _courseFilesRepository;
         private readonly IUnitOfWork _uow;
         private readonly IFileService _fileService;
+        private readonly IHttpClientFactory _httpClient;
 
-        public CoursesController(IUnitOfWork uow, IFileService fileService)
+        public CoursesController(IUnitOfWork uow, IFileService fileService, IHttpClientFactory httpClient)
         {
             //_courseRepository = repo;
             //_courseFilesRepository = files;
             _uow = uow;
             _fileService = fileService;
+            _httpClient = httpClient;
         }
+
 
         [HttpGet]
         public async Task<ActionResult<List<Course>>> GetAll()
@@ -40,6 +43,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
 
             return Ok(courses);
         }
+
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Course>> GetById(int id)
@@ -53,12 +57,16 @@ namespace KGTT_Educate.Services.Courses.Controllers
             return Ok(course);
         }
 
+
+        //TODO
         [HttpGet("Group/{groupId}")]
         public async Task<ActionResult<Course>> GetByGroupId(int groupId)
         {
             return Ok();
         }
 
+
+        //TODO
         [HttpGet("Files/Download/{fileId}")]
         public async Task<ActionResult> DownloadFile(int fileId)
         {
@@ -66,25 +74,25 @@ namespace KGTT_Educate.Services.Courses.Controllers
 
             CourseFile file = await _uow.CourseFiles.GetByIdAsync(fileId);
 
+            if (file == null) return NotFound();
+
             // ПОЛНЫЙ ПУТЬ
             // FULL PATH
-            string fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", file.LocalFilePath);
+            var httpClient = _httpClient.CreateClient();
 
-            try
-            {
-                // ПРОБУЕМ СКАЧАТЬ ФАЙЛ
-                // TRY TO DOWNLOAD FILE
-                await _fileService.DownloadFileAsync(fullPath, HttpContext.Response);
-                return new EmptyResult();
-            }
-            catch (FileNotFoundException)
-            {
-                // ЕСЛИ НЕ НАШЛИ, КИДАЕМ NF
-                // IF FILE WASN'T FOUND, THROW NOT FOUND
-                return NotFound();
-            }
+            using var httpResponse = await httpClient.GetAsync($"http://192.168.0.37:10005/Download/{file.LocalFilePath}");
+
+            //if (httpResponse.IsSuccessStatusCode)
+            //{
+            //    using var contentStream = await httpResponse.Content.ReadAsStreamAsync();
+
+
+            //}
+
+            return Ok();
         }
 
+        //TODO
         [HttpGet("Files/{courseId}")]
         public async Task<ActionResult> GetFilesByCourseId(int courseId)
         {
@@ -92,9 +100,10 @@ namespace KGTT_Educate.Services.Courses.Controllers
 
             if (files == null || files.Count() == 0) return NotFound(new { Message = "Не найдено" });
 
-            return Ok(files.Adapt<IEnumerable<CourseFileDTO>>());
+            return Ok(files.Adapt<IEnumerable<FileDTO>>());
         }
 
+        //TODO
         [HttpPost]
         public async Task<ActionResult<CourseRequest>> Create([FromForm] CourseRequest courseRequest)
         {
@@ -111,29 +120,11 @@ namespace KGTT_Educate.Services.Courses.Controllers
 
             if (courseRequest.FormFile != null)
             {
-                try
-                {
-                    // ПОЛУЧАЕМ РАСШИРЕНИЕ ПРЕДОСТАВЛЕННОГО ФАЙЛА
-                    // GET PROVIDED FILE EXTENSION
-                    string fileExt = Path.GetExtension(courseRequest.FormFile.FileName).ToLowerInvariant();
+                var httpClient = _httpClient.CreateClient();
+                using var response = await httpClient.PostAsync($"http://192.168.0.37:10005/Upload", courseRequest.FormFile);
 
-                    if (!AllowedFileExtensions.mediaExtensions.Contains(fileExt))
-                        return BadRequest(new { Message = $"Вы не можете загрузить превью с расширением {fileExt}" });
-
-                    string filePath = await _fileService.UploadMediaAsync(courseRequest.FormFile, false);
-
-                    // ОТНОСИТЕЛЬНЫЙ ПУТЬ
-                    // RELATIVE PATH
-                    var wwwrootPath = Path.GetRelativePath(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), filePath);
-
-                    course.PreviewPhotoPath = filePath;
-                    course.LocalPreviewPhotoPath = wwwrootPath;
-                }
-                catch (Exception ex)
-                {
-                    //return StatusCode(500, "Ошибка загрузки файла");
-                    return StatusCode(500, ex.Message);
-                }
+                course.PreviewPhotoPath = ;
+                course.LocalPreviewPhotoPath = wwwrootPath;
             }
 
             await _uow.Courses.CreateAsync(course);
@@ -141,6 +132,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
             return Ok(new { message = $"Курс {course.Name} успешно создан!" });
         }
 
+        //TODO
         [HttpPut("{id}")]
         public async Task<ActionResult> Update(int id, Course course)
         {
@@ -159,6 +151,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
             return Ok();
         }
 
+        //TODO
         [HttpDelete]
         public async Task<ActionResult> Delete(int id)
         {
@@ -204,6 +197,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
         }
 
 
+        //TODO
         [HttpPost("Files/{courseId}")]
         public async Task<ActionResult> UploadFile(int courseId, IFormFile file, bool isPinned = false)
         {
@@ -211,58 +205,43 @@ namespace KGTT_Educate.Services.Courses.Controllers
 
             if (course == null) return NotFound();
 
-            try
-            {
-                // ПОЛУЧАЕМ РАСШИРЕНИЕ ПРЕДОСТАВЛЕННОГО ФАЙЛА
-                // GET PROVIDED FILE EXTENSION
-                string fileExt = Path.GetExtension(file.FileName).ToLowerInvariant();
+            //try
+            //{
 
-                if (!AllowedFileExtensions.fileExtensions.Contains(fileExt) && !AllowedFileExtensions.mediaExtensions.Contains(fileExt))
-                    return BadRequest(new { Message = $"Вы не можете загрузить файл с расширением {fileExt}" });
+            //CourseFile courseFile = new CourseFile
+            //{
+            //    Id = lastFile == null ? 1 : lastFile.Id + 1,
+            //    CourseId = courseId,
+            //    OriginalName = file.FileName,
+            //    FileName = fileName,
+            //    FullFilePath = filePath,
+            //    LocalFilePath = wwwrootPath,
+            //    IsMedia = isMedia,
+            //    Course = course,
+            //    IsPinned = isMedia ? isPinned : true // Медиафайлы могут быть и на UI, и как прикрепленный файл, остальные будут помечены как прикрепленный файл
+            //};
 
-                bool isMedia = AllowedFileExtensions.mediaExtensions.Contains(fileExt);
+            //await _uow.CourseFiles.CreateAsync(courseFile);
 
-                string filePath = await _fileService.UploadFileAsync(file, false, isMedia);
+            //return Ok(new { 
+            //    WwwrootPath = wwwrootPath, 
+            //    FileName = fileName, 
+            //    IsMedia = isMedia, 
+            //    FilePath = filePath, 
+            //    OriginalName = courseFile.OriginalName, 
+            //    IsPinned = courseFile.IsPinned
+            //});
+            //}
+            //catch (Exception ex)
+            //{
+            //    //return StatusCode(500, "Ошибка загрузки файла");
+            //    return StatusCode(500, ex.Message);
+            //}
 
-                string fileName = Path.GetFileName(filePath);
-
-                // ОТНОСИТЕЛЬНЫЙ ПУТЬ
-                // RELATIVE PATH
-                var wwwrootPath = Path.GetRelativePath(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), filePath);
-
-                CourseFile lastFile = await _uow.CourseFiles.GetLastAsync();
-
-                CourseFile courseFile = new CourseFile
-                {
-                    Id = lastFile == null ? 1 : lastFile.Id + 1,
-                    CourseId = courseId,
-                    OriginalName = file.FileName,
-                    FileName = fileName,
-                    FullFilePath = filePath,
-                    LocalFilePath = wwwrootPath,
-                    IsMedia = isMedia,
-                    Course = course,
-                    IsPinned = isMedia ? isPinned : true // Медиафайлы могут быть и на UI, и как прикрепленный файл, остальные будут помечены как прикрепленный файл
-                };
-
-                await _uow.CourseFiles.CreateAsync(courseFile);
-
-                return Ok(new { 
-                    WwwrootPath = wwwrootPath, 
-                    FileName = fileName, 
-                    IsMedia = isMedia, 
-                    FilePath = filePath, 
-                    OriginalName = courseFile.OriginalName, 
-                    IsPinned = courseFile.IsPinned
-                });
-            }
-            catch (Exception ex)
-            {
-                //return StatusCode(500, "Ошибка загрузки файла");
-                return StatusCode(500, ex.Message);
-            }
+            return Ok();
         }
 
+        // TODO
         [HttpDelete("Files/{fileId}")]
         public async Task<ActionResult> DeleteFile(int fileId)
         {
@@ -270,13 +249,10 @@ namespace KGTT_Educate.Services.Courses.Controllers
 
             if (file == null) return NotFound();
 
-            string fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", file.LocalFilePath);
-
-            await _fileService.DeleteFileAsync(fullPath);
 
             await _uow.CourseFiles.DeleteAsync(fileId);
 
-            return Ok(new { FilePath = fullPath, FileName = file.FileName });
+            return Ok(new { FileName = file.FileName });
         }
     }
 }
