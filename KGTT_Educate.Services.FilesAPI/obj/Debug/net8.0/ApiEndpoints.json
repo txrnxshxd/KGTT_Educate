@@ -1,0 +1,55 @@
+[
+  {
+    "ContainingType": "KGTT_Educate.Services.FilesAPI.Controllers.FilesController",
+    "Method": "DeleteFile",
+    "RelativePath": "api/Files/Delete/{path}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "path",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "KGTT_Educate.Services.FilesAPI.Controllers.FilesController",
+    "Method": "DownloadFile",
+    "RelativePath": "api/Files/Download/{path}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "path",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "KGTT_Educate.Services.FilesAPI.Controllers.FilesController",
+    "Method": "UploadFile",
+    "RelativePath": "api/Files/Upload",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "file",
+        "Type": "Microsoft.AspNetCore.Http.IFormFile",
+        "IsRequired": false
+      },
+      {
+        "Name": "section",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  }
+]

@@ -1,0 +1,28 @@
+﻿<Project>
+  <ItemGroup>
+    <StaticWebAssetEndpoint Include="_content/KGTT_Educate.Services.Files/Courses/Media/a114ae58-3b63-4ab3-bf79-cb9d9345fbf6.jpg">
+      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\Courses\Media\a114ae58-3b63-4ab3-bf79-cb9d9345fbf6.jpg'))</AssetFile>
+      <Selectors><![CDATA[[]]]></Selectors>
+      <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-Fn7SJzspMWE4KzvxJtHo2E70N7u3I6OY49rc\u002BMy4kSI="}]]]></EndpointProperties>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=3600, must-revalidate"},{"Name":"Content-Length","Value":"67027"},{"Name":"Content-Type","Value":"image/jpeg"},{"Name":"ETag","Value":"\u0022Fn7SJzspMWE4KzvxJtHo2E70N7u3I6OY49rc\u002BMy4kSI=\u0022"},{"Name":"Last-Modified","Value":"Sun, 18 May 2025 09:01:08 GMT"}]]]></ResponseHeaders>
+    </StaticWebAssetEndpoint>
+    <StaticWebAssetEndpoint Include="_content/KGTT_Educate.Services.Files/Courses/Media/a114ae58-3b63-4ab3-bf79-cb9d9345fbf6.uadjovcc4c.jpg">
+      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\Courses\Media\a114ae58-3b63-4ab3-bf79-cb9d9345fbf6.jpg'))</AssetFile>
+      <Selectors><![CDATA[[]]]></Selectors>
+      <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"uadjovcc4c"},{"Name":"integrity","Value":"sha256-Fn7SJzspMWE4KzvxJtHo2E70N7u3I6OY49rc\u002BMy4kSI="},{"Name":"label","Value":"_content/KGTT_Educate.Services.Files/Courses/Media/a114ae58-3b63-4ab3-bf79-cb9d9345fbf6.jpg"}]]]></EndpointProperties>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"67027"},{"Name":"Content-Type","Value":"image/jpeg"},{"Name":"ETag","Value":"\u0022Fn7SJzspMWE4KzvxJtHo2E70N7u3I6OY49rc\u002BMy4kSI=\u0022"},{"Name":"Last-Modified","Value":"Sun, 18 May 2025 09:01:08 GMT"}]]]></ResponseHeaders>
+    </StaticWebAssetEndpoint>
+    <StaticWebAssetEndpoint Include="_content/KGTT_Educate.Services.Files/Lessons/Media/a330dc86-acc0-44dd-941f-f3f55f21b240.jpg">
+      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\Lessons\Media\a330dc86-acc0-44dd-941f-f3f55f21b240.jpg'))</AssetFile>
+      <Selectors><![CDATA[[]]]></Selectors>
+      <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-Fn7SJzspMWE4KzvxJtHo2E70N7u3I6OY49rc\u002BMy4kSI="}]]]></EndpointProperties>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=3600, must-revalidate"},{"Name":"Content-Length","Value":"67027"},{"Name":"Content-Type","Value":"image/jpeg"},{"Name":"ETag","Value":"\u0022Fn7SJzspMWE4KzvxJtHo2E70N7u3I6OY49rc\u002BMy4kSI=\u0022"},{"Name":"Last-Modified","Value":"Sun, 18 May 2025 09:02:29 GMT"}]]]></ResponseHeaders>
+    </StaticWebAssetEndpoint>
+    <StaticWebAssetEndpoint Include="_content/KGTT_Educate.Services.Files/Lessons/Media/a330dc86-acc0-44dd-941f-f3f55f21b240.uadjovcc4c.jpg">
+      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\Lessons\Media\a330dc86-acc0-44dd-941f-f3f55f21b240.jpg'))</AssetFile>
+      <Selectors><![CDATA[[]]]></Selectors>
+      <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"uadjovcc4c"},{"Name":"integrity","Value":"sha256-Fn7SJzspMWE4KzvxJtHo2E70N7u3I6OY49rc\u002BMy4kSI="},{"Name":"label","Value":"_content/KGTT_Educate.Services.Files/Lessons/Media/a330dc86-acc0-44dd-941f-f3f55f21b240.jpg"}]]]></EndpointProperties>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"67027"},{"Name":"Content-Type","Value":"image/jpeg"},{"Name":"ETag","Value":"\u0022Fn7SJzspMWE4KzvxJtHo2E70N7u3I6OY49rc\u002BMy4kSI=\u0022"},{"Name":"Last-Modified","Value":"Sun, 18 May 2025 09:02:29 GMT"}]]]></ResponseHeaders>
+    </StaticWebAssetEndpoint>
+  </ItemGroup>
+</Project>
