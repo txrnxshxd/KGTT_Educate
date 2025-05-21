@@ -100,7 +100,8 @@ namespace KGTT_Educate.Services.Courses.Controllers
 
             if (files == null || files.Count() == 0) return NotFound(new { Message = "Не найдено" });
 
-            return Ok(files.Adapt<IEnumerable<FileDTO>>());
+            //return Ok(files.Adapt<IEnumerable<FileDTO>>());
+            return Ok();
         }
 
         //TODO
@@ -120,11 +121,11 @@ namespace KGTT_Educate.Services.Courses.Controllers
 
             if (courseRequest.FormFile != null)
             {
-                var httpClient = _httpClient.CreateClient();
-                using var response = await httpClient.PostAsync($"http://192.168.0.37:10005/Upload", courseRequest.FormFile);
+                //var httpClient = _httpClient.CreateClient();
+                //using var response = await httpClient.PostAsync($"http://192.168.0.37:10005/Upload", courseRequest.FormFile);
 
-                course.PreviewPhotoPath = ;
-                course.LocalPreviewPhotoPath = wwwrootPath;
+                //course.PreviewPhotoPath = ;
+                //course.LocalPreviewPhotoPath = wwwrootPath;
             }
 
             await _uow.Courses.CreateAsync(course);
