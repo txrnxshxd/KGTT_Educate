@@ -24,11 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\Courses\" />
-    <Folder Include="wwwroot\Courses\Files\" />
-    <Folder Include="wwwroot\Courses\Media\" />
-    <Folder Include="wwwroot\Lessons\Files\" />
-    <Folder Include="wwwroot\Lessons\Media\" />
+    <Folder Include="wwwroot\" />
   </ItemGroup>
 
 </Project>
