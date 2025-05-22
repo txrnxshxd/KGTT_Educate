@@ -17,7 +17,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KGTT_Educate.Services.Event
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KGTT_Educate.Services.AuthAPI", "KGTT_Educate.Services.AuthAPI\KGTT_Educate.Services.AuthAPI.csproj", "{DA755CA1-17E1-48B5-A177-DE839378C516}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KGTT_Educate.Services.NotificationsAPI", "KGTT_Educate.Services.EmailAPI\KGTT_Educate.Services.NotificationsAPI.csproj", "{3683C986-C782-429D-81CD-1101FA715AA6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KGTT_Educate.Services.NotificationsAPI", "KGTT_Educate.Services.NotificationsAPI\KGTT_Educate.Services.NotificationsAPI.csproj", "{3683C986-C782-429D-81CD-1101FA715AA6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KGTT_Educate.Services.Account", "KGTT_Educate.Services.Account\KGTT_Educate.Services.Account.csproj", "{C59BD831-1E40-403E-AF5C-C16BB2E5E238}"
 EndProject

@@ -1,6 +1,0 @@
-@KGTT_Educate.Services.TgAPI_HostAddress = http://localhost:5134
-
-GET {{KGTT_Educate.Services.TgAPI_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
