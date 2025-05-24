@@ -14,6 +14,11 @@ namespace KGTT_Educate.Services.Account.Data.Repository
             _context = context;
         }
 
+        public void Update(UserGroup userGroup)
+        {
+            _context.UserGroup.Update(userGroup);
+        }
+
         public IEnumerable<UserGroup> GetMany(Expression<Func<UserGroup, bool>> predicate, string? includeProperties = null)
         {
             IQueryable<UserGroup> query = dbSet;
@@ -30,11 +35,6 @@ namespace KGTT_Educate.Services.Account.Data.Repository
             }
 
             return query.ToList();
-        }
-
-        public void Update(UserGroup userGroup)
-        {
-            _context.UserGroup.Update(userGroup);
         }
     }
 }

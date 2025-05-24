@@ -17,6 +17,16 @@ namespace KGTT_Educate.Services.Account.Controllers
             _uow = uow;
         }
 
+        [HttpGet]
+        public IActionResult GetAll()
+        {
+            IEnumerable<Role> roles = _uow.Roles.GetAll();
+
+            if (roles.Count() == 0) return NotFound("Нет ни одной роли");
+
+            return Ok(roles);
+        }
+
         [HttpPost]
         public IActionResult CreateRole(Role role)
         {

@@ -4,7 +4,6 @@
     {
         IEventsRepository Events { get; }
         IEventUserRepository EventUser { get; }
-        IEventGroupRepository EventGroup { get; }
 
         void Save();
     }

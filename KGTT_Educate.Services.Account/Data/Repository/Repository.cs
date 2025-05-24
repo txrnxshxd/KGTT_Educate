@@ -1,4 +1,5 @@
 ﻿using KGTT_Educate.Services.Account.Data.Repository.Interfaces;
+using KGTT_Educate.Services.Account.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 

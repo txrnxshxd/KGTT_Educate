@@ -17,6 +17,16 @@ namespace KGTT_Educate.Services.Account.Controllers
             _uow = uow;
         }
 
+        [HttpGet]
+        public IActionResult GetAll()
+        {
+            IEnumerable<Group> groups = _uow.Groups.GetAll();
+
+            if (groups.Count() == 0) return NotFound("Нет ни одной группы");
+
+            return Ok(groups);
+        }
+
         [HttpPost]
         public IActionResult CreateGroup(Group group)
         {

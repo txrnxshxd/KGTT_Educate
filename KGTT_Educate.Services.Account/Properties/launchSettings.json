@@ -9,14 +9,26 @@
     }
   },
   "profiles": {
-    "http": {
-      "commandName": "Project",
-      "dotnetRunMessages": true,
-      "launchBrowser": true,
-      "launchUrl": "swagger",
-      "applicationUrl": "http://192.168.0.37:10004",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+    //"http": {
+    //  "commandName": "Project",
+    //  "dotnetRunMessages": true,
+    //  "launchBrowser": true,
+    //  "launchUrl": "swagger",
+    //  "applicationUrl": "http://192.168.0.37:10004",
+    //  "environmentVariables": {
+    //    "ASPNETCORE_ENVIRONMENT": "Development"
+    //  },
+      "https": {
+        "commandName": "Project",
+        "dotnetRunMessages": true,
+        "launchBrowser": true,
+        "launchUrl": "swagger",
+        "applicationUrl": "https://192.168.0.37:10004",
+        "environmentVariables": {
+          "ASPNETCORE_ENVIRONMENT": "Development",
+          "ASPNETCORE_Kestrel__Certificates__Default__Password": "txrnxshxd!",
+          "ASPNETCORE_Kestrel__Certificates__Default__Path": "C:\\Users\\txrnxshxd\\.aspnet\\https\\kgttedu.pfx"
+        }
       }
     },
     "IIS Express": {

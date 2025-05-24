@@ -38,6 +38,16 @@ namespace KGTT_Educate.Services.Account.Controllers
             return Ok(user.Adapt<UserDTO>());
         }
 
+        [HttpGet("Group/{groupId}")]
+        public IActionResult GetByGroupId(Guid groupId)
+        {
+            IEnumerable<UserGroup> userGroup = _uow.UserGroup.GetMany(x => x.GroupId == groupId, "User,Group");
+
+            if (userGroup.Count() == 0) return NotFound();
+
+            return Ok(userGroup.Adapt<IEnumerable<UserGroupDTO>>());
+        }
+
         [HttpPost]
         public IActionResult Create(User user)
         {

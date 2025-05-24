@@ -1,8 +1,10 @@
 using KGTT_Educate.Services.Events.Data;
 using KGTT_Educate.Services.Events.Data.Repository;
 using KGTT_Educate.Services.Events.Data.Repository.Interfaces;
+using KGTT_Educate.Services.Events.SyncDataServices.Grpc;
 using Mapster;
 using MapsterMapper;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,6 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
+builder.Services.AddGrpc();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -20,6 +23,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 var mapsterConfig = new TypeAdapterConfig();
 builder.Services.AddSingleton(mapsterConfig);
 builder.Services.AddScoped<IMapper, ServiceMapper>();
+builder.Services.AddScoped<IGrpcAccountClient, GrpcAccountClient>();
 
 builder.Services.AddScoped<IUoW, UoW>();
 

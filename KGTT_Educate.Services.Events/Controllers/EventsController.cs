@@ -1,5 +1,7 @@
 ﻿using KGTT_Educate.Services.Events.Data.Repository.Interfaces;
 using KGTT_Educate.Services.Events.Models;
+using KGTT_Educate.Services.Events.Models.Dto;
+using KGTT_Educate.Services.Events.SyncDataServices.Grpc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,9 +12,11 @@ namespace KGTT_Educate.Services.Events.Controllers
     public class EventsController : ControllerBase
     {
         private readonly IUoW _uow;
+        private readonly IConfiguration _configuration;
 
-        public EventsController(IUoW uow)
+        public EventsController(IUoW uow, IConfiguration configuration)
         {
+            _configuration = configuration;
             _uow = uow;
         }
 
@@ -58,6 +62,33 @@ namespace KGTT_Educate.Services.Events.Controllers
             _uow.Save();
 
             return Ok(evnt);
+        }
+
+        [HttpPost("Group/{groupId}")]
+        public IActionResult CreateEventGroup(Guid eventId, Guid groupId)
+        {
+            Event evnt = _uow.Events.Get(x => x.Id == eventId);
+
+            var grpcClient = new GrpcAccountClient(_configuration);
+            IEnumerable<UserGroupDTO> userGroup = grpcClient.GetUserGroup(groupId);
+
+            if (userGroup == null) return NotFound();
+
+            foreach (var user in userGroup)
+            {
+                EventUser eventUser = new()
+                {
+                    UserId = user.User.Id,
+                    EventId = eventId,
+                    Event = evnt
+                };
+
+                _uow.EventUser.Add(eventUser);
+            }
+
+            _uow.Save();
+
+            return Ok();
         }
     }
 }

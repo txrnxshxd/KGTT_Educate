@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+option csharp_namespace = "KGTT_Educate.Services.Account";
+
+service UserService {
+	rpc GetUserGroup (GetUserGroupRequest) returns (GetUserGroupResponse);
+}
+
+message GetUserGroupRequest {
+    string group_id = 1;
+}
+
+message GetUserGroupResponse {
+    repeated UserGroupDTO user_group = 1;
+}
+
+message UserGroupDTO {
+    UserDTO user = 1;
+    GroupDTO group = 2;
+}
+
+message UserDTO {
+    string id = 1;
+    string login = 2;
+    string email = 3;
+    string phone_number = 4;
+    string telegram = 5;
+    string last_name = 6;
+    string first_name = 7;
+    string middle_name = 8;
+    string avatar_local_path = 9;
+    string avatar_full_path = 10;
+}
+
+message GroupDTO {
+    string id = 1;
+    string name = 2;
+}
