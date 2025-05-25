@@ -71,6 +71,7 @@ builder.Services.AddSingleton<IMongoDatabase>(provider =>
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddHttpClient<ICommandDataClient, HttpCommandDataClient>();
+builder.Services.AddHttpClient<IReadOnlyDataClient, HttpReadOnlyDataClient>();
 
 builder.WebHost.ConfigureKestrel(options =>
 {

@@ -1,8 +1,12 @@
 ﻿using KGTT_Educate.Services.Courses.Data.Interfaces.UoW;
 using KGTT_Educate.Services.Courses.Models;
+using KGTT_Educate.Services.Courses.Models.Dto;
+using KGTT_Educate.Services.Courses.SyncDataServices.Http;
 using KGTT_Educate.Services.Courses.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
+using static System.Net.WebRequestMethods;
 
 namespace KGTT_Educate.Services.Courses.Controllers
 {
@@ -11,15 +15,16 @@ namespace KGTT_Educate.Services.Courses.Controllers
     public class LessonsController : ControllerBase
     {
         // СДЕЛАТЬ УДАЛЕНИЕ ФАЙЛОВ АСИНХРОННО
-        //private readonly ILessonsRepository _lessonsRepository;
-        //private readonly ILessonFilesRepository _lessonFile;
-        private readonly IUnitOfWork _uow;
 
-        public LessonsController(IUnitOfWork uow)
+        private readonly IUnitOfWork _uow;
+        private readonly ICommandDataClient _httpCommand;
+        private readonly IReadOnlyDataClient _httpRead;
+
+        public LessonsController(IUnitOfWork uow, ICommandDataClient httpCommand, IReadOnlyDataClient httpRead)
         {
-            //_lessonsRepository = lessons;
-            //_lessonFile = file;
             _uow = uow;
+            _httpCommand = httpCommand;
+            _httpRead = httpRead;
         }
 
         [HttpGet]
@@ -104,133 +109,143 @@ namespace KGTT_Educate.Services.Courses.Controllers
             return Ok();
         }
 
-        //[HttpDelete("{id}")]
-        //public async Task<ActionResult> Delete(int id)
-        //{
-        //    if (id <= 0) return BadRequest();
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> Delete(int id)
+        {
+            if (id <= 0) return BadRequest();
 
-        //    IEnumerable<LessonFile> lessonFiles = await _uow.LessonFiles.GetByCourseIdAsync(id);
+            IEnumerable<LessonFile> lessonFiles = await _uow.LessonFiles.GetByCourseIdAsync(id);
 
-        //    if (lessonFiles != null && lessonFiles.Count() > 0)
-        //    {
-        //        foreach (LessonFile lessonFile in lessonFiles)
-        //        {
+            if (lessonFiles != null && lessonFiles.Count() > 0)
+            {
+                foreach (LessonFile lessonFile in lessonFiles)
+                {
+                    try
+                    {
+                        using HttpResponseMessage response = await _httpCommand.DeleteFile(lessonFile.LocalFilePath);
 
-        //            string fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", lessonFile.LocalFilePath);
+                        if (!response.IsSuccessStatusCode)
+                        {
+                            var error = await response.Content.ReadAsStringAsync();
+                            return StatusCode((int)response.StatusCode, $"Ошибка удаления файла: {error}");
+                        }
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        return StatusCode(500, $"Ошибка сети: {ex.Message}");
+                    }
+                    catch (JsonException ex)
+                    {
+                        return StatusCode(500, $"Ошибка JSON: {ex.Message}");
+                    }
+                }
 
-        //            await _fileService.DeleteFileAsync(fullPath);
-        //        }
-
-        //    }
+            }
 
 
-        //    await _uow.Lessons.DeleteByCourseIdAsync(id);
+            await _uow.Lessons.DeleteByCourseIdAsync(id);
 
-        //    await _uow.LessonFiles.DeleteByCourseIdAsync(id);
+            await _uow.LessonFiles.DeleteByCourseIdAsync(id);
 
-        //    return Ok(new { message = $"Урок удален" });
-        //}
+            return Ok(new { message = $"Урок удален" });
+        }
 
-        //[HttpPost("Files/{lessonId}")]
-        //public async Task<ActionResult> UploadFile(int lessonId, IFormFile file, bool isPinned = false)
-        //{
-        //    Lesson lesson = await _uow.Lessons.GetByIdAsync(lessonId);
+        [HttpPost("Files/{lessonId}")]
+        public async Task<ActionResult> UploadFile(int lessonId, IFormFile file, bool isPinned = false)
+        {
+            Lesson lesson = await _uow.Lessons.GetByIdAsync(lessonId);
 
-        //    if (lesson == null) return NotFound();
+            if (lesson == null) return NotFound();
 
-        //    try
-        //    {
-        //        // ПОЛУЧАЕМ РАСШИРЕНИЕ ПРЕДОСТАВЛЕННОГО ФАЙЛА
-        //        // GET PROVIDED FILE EXTENSION
-        //        string fileExt = Path.GetExtension(file.FileName).ToLowerInvariant();
+            try
+            {
+                using HttpResponseMessage response = await _httpCommand.SendFile(file, "Lessons");
 
-        //        if (!AllowedFileExtensions.fileExtensions.Contains(fileExt) && !AllowedFileExtensions.mediaExtensions.Contains(fileExt))
-        //            return BadRequest(new { Message = $"Вы не можете загрузить файл с расширением {fileExt}" });
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    return StatusCode((int)response.StatusCode, $"Ошибка загрузки файла: {error}");
+                }
 
-        //        bool isMedia = AllowedFileExtensions.mediaExtensions.Contains(fileExt);
+                var result = await response.Content.ReadFromJsonAsync<FilesApiResponse>();
 
-        //        string filePath = await _fileService.UploadFileAsync(file, true, isMedia);
+                LessonFile lastFile = await _uow.LessonFiles.GetLastAsync();
 
-        //        string fileName = Path.GetFileName(filePath);
+                LessonFile lessonFile = new LessonFile
+                {
+                    Id = lastFile == null ? 1 : lastFile.Id + 1,
+                    LessonId = lessonId,
+                    OriginalName = file.FileName,
+                    FileName = result.FileName,
+                    LocalFilePath = result.LocalFilePath,
+                    Lesson = lesson,
+                    IsPinned = isPinned
+                };
 
-        //        // ОТНОСИТЕЛЬНЫЙ ПУТЬ
-        //        // RELATIVE PATH
-        //        var wwwrootPath = Path.GetRelativePath(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), filePath);
+                await _uow.LessonFiles.CreateAsync(lessonFile);
 
-        //        LessonFile lastFile = await _uow.LessonFiles.GetLastAsync();
+                return Ok();
+            }
+            catch (HttpRequestException ex)
+            {
+                return StatusCode(500, $"Ошибка сети: {ex.Message}");
+            }
+            catch (JsonException ex)
+            {
+                return StatusCode(500, $"Ошибка JSON: {ex.Message}");
+            }
+        }
 
-        //        LessonFile lessonFile = new LessonFile
-        //        {
-        //            Id = lastFile == null ? 1 : lastFile.Id + 1,
-        //            LessonId = lessonId,
-        //            OriginalName = file.FileName,
-        //            FileName = fileName,
-        //            FullFilePath = filePath,
-        //            LocalFilePath = wwwrootPath,
-        //            IsMedia = isMedia,
-        //            Lesson = lesson,
-        //            IsPinned = isMedia ? isPinned : true // Медиафайлы могут быть и на UI, и как прикрепленный файл, остальные будут помечены как прикрепленный файл
-        //        };
+        [HttpGet("Files/Get/{fileId}")]
+        public async Task<ActionResult> GetFile(int fileId)
+        {
+            if (fileId <= 0) return BadRequest();
 
-        //        await _uow.LessonFiles.CreateAsync(lessonFile);
+            LessonFile file = await _uow.LessonFiles.GetByIdAsync(fileId);
 
-        //        return Ok(new
-        //        {
-        //            WwwrootPath = wwwrootPath,
-        //            FileName = fileName,
-        //            IsMedia = isMedia,
-        //            FilePath = filePath,
-        //            OriginalName = file.FileName,
-        //            IsPinned = lessonFile.IsPinned
-        //        });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        //return StatusCode(500, "Ошибка загрузки файла");
-        //        return StatusCode(500, ex.Message);
-        //    }
-        //}
+            try
+            {
+                var (fileStream, contentType) = await _httpRead.GetFile(file.LocalFilePath);
+                return File(fileStream, contentType);
+            }
+            catch (HttpRequestException ex)
+            {
+                return StatusCode((int)ex.StatusCode!, $"Ошибка сети: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
-        //[HttpGet("Files/Download/{fileId}")]
-        //public async Task<ActionResult> DownloadFile(int fileId)
-        //{
-        //    if (fileId <= 0) return BadRequest();
+        [HttpDelete("Files/{fileId}")]
+        public async Task<ActionResult> DeleteFile(int fileId)
+        {
+            LessonFile file = await _uow.LessonFiles.GetByIdAsync(fileId);
 
-        //    LessonFile file = await _uow.LessonFiles.GetByIdAsync(fileId);
+            if (file == null) return NotFound();
 
-        //    // ПОЛНЫЙ ПУТЬ
-        //    // FULL PATH
-        //    string fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", file.LocalFilePath);
+            try
+            {
+                using HttpResponseMessage response = await _httpCommand.DeleteFile(file.LocalFilePath);
 
-        //    try
-        //    {
-        //        // ПРОБУЕМ СКАЧАТЬ ФАЙЛ
-        //        // TRY TO DOWNLOAD FILE
-        //        await _fileService.DownloadFileAsync(fullPath, HttpContext.Response);
-        //        return new EmptyResult();
-        //    }
-        //    catch (FileNotFoundException)
-        //    {
-        //        // ЕСЛИ НЕ НАШЛИ, КИДАЕМ NF
-        //        // IF FILE WASN'T FOUND, THROW NOT FOUND
-        //        return NotFound();
-        //    }
-        //    }
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    return StatusCode((int)response.StatusCode, $"Ошибка удаления файла: {error}");
+                }
 
-        //    [HttpDelete("Files/{fileId}")]
-        //    public async Task<ActionResult> DeleteFile(int fileId)
-        //    {
-        //        LessonFile file = await _uow.LessonFiles.GetByIdAsync(fileId);
-
-        //        if (file == null) return NotFound();
-
-        //        string fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", file.LocalFilePath);
-
-        //        await _fileService.DeleteFileAsync(fullPath);
-
-        //        await _uow.LessonFiles.DeleteAsync(fileId);
-
-        //        return Ok(new { FilePath = fullPath, FileName = file.FileName });
-        //    }
+                await _uow.LessonFiles.DeleteAsync(fileId);
+                return Ok();
+            }
+            catch (HttpRequestException ex)
+            {
+                return StatusCode(500, $"Ошибка сети: {ex.Message}");
+            }
+            catch (JsonException ex)
+            {
+                return StatusCode(500, $"Ошибка JSON: {ex.Message}");
+            }
+        }
     }
 }

@@ -30,7 +30,7 @@ namespace KGTT_Educate.Services.Courses.SyncDataServices.Http
 
         public async Task<HttpResponseMessage> DeleteFile(string path)
         {
-            return await _httpClient.DeleteAsync($"{_configuration["FilesAPIDelete"]}/{path}");
+            return await _httpClient.DeleteAsync($"{_configuration["FilesAPIDelete"]}/{Uri.EscapeDataString(path)}");
         }
     }
 }

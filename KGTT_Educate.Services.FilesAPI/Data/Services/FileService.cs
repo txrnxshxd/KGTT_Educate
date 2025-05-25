@@ -54,7 +54,6 @@ namespace KGTT_Educate.Services.FilesAPI.Data.Services
 
         public Task DeleteFileAsync(string filePath)
         {
-            Console.WriteLine(Path.Combine(Directory.GetCurrentDirectory(), filePath));
             if (File.Exists(filePath))
             {
                 File.Delete(Path.Combine(Directory.GetCurrentDirectory(), filePath));

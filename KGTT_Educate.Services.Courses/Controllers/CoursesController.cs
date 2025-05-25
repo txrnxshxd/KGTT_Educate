@@ -152,7 +152,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
             {
                 if (course.LocalPreviewPhotoPath != null)
                 {
-                    using HttpResponseMessage response = await _http.DeleteFile(Uri.EscapeDataString(course.LocalPreviewPhotoPath));
+                    using HttpResponseMessage response = await _http.DeleteFile(course.LocalPreviewPhotoPath);
 
                     if (!response.IsSuccessStatusCode)
                     {
@@ -192,7 +192,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
                 foreach (CourseFile courseFile in courseFiles)
                 {
 
-                    using HttpResponseMessage response = await _http.DeleteFile(Uri.EscapeDataString(courseFile.LocalFilePath));
+                    using HttpResponseMessage response = await _http.DeleteFile(courseFile.LocalFilePath);
 
                     if (!response.IsSuccessStatusCode)
                     {
@@ -209,7 +209,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
             {
                 foreach (LessonFile lessonFile in lessonFiles)
                 {
-                    using HttpResponseMessage response = await _http.DeleteFile(Uri.EscapeDataString(lessonFile.LocalFilePath));
+                    using HttpResponseMessage response = await _http.DeleteFile(lessonFile.LocalFilePath);
 
                     if (!response.IsSuccessStatusCode)
                     {
@@ -288,7 +288,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
 
             try
             {
-                using HttpResponseMessage response = await _http.DeleteFile(Uri.EscapeDataString(file.LocalFilePath));
+                using HttpResponseMessage response = await _http.DeleteFile(file.LocalFilePath);
 
                 if (!response.IsSuccessStatusCode)
                 {
