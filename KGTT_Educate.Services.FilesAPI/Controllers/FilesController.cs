@@ -44,9 +44,7 @@ namespace KGTT_Educate.Services.FilesAPI.Controllers
 
                 string wwwrootPath = Path.GetRelativePath(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), filePath);
 
-                string fullPath = Path.GetFullPath(wwwrootPath);
-
-                return Ok(new { FileName = fileName, OriginalName = file.FileName, LocalFilePath = wwwrootPath, FullFilePath = fullPath });
+                return Ok(new { FileName = fileName, OriginalName = file.FileName, LocalFilePath = wwwrootPath });
             }
             catch (Exception ex)
             {
@@ -59,6 +57,11 @@ namespace KGTT_Educate.Services.FilesAPI.Controllers
         public async Task<ActionResult> DeleteFile(string path)
         {
             string fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", path);
+
+            if (!System.IO.File.Exists(fullPath))
+            {
+                return NotFound("Файл не найден");
+            }
 
             await _fileService.DeleteFileAsync(fullPath);
 

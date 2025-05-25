@@ -1,14 +1,15 @@
 using KGTT_Educate.Services.Courses.Data.Interfaces.Repository;
-using KGTT_Educate.Services.Courses.Data.Interfaces.Services;
 using KGTT_Educate.Services.Courses.Data.Interfaces.UoW;
 using KGTT_Educate.Services.Courses.Data.Repository;
-using KGTT_Educate.Services.Courses.Data.Services;
 using KGTT_Educate.Services.Courses.Data.UoW;
+using KGTT_Educate.Services.Courses.SyncDataServices.Http;
 using KGTT_Educate.Services.Courses.Utils;
 using Mapster;
 using MapsterMapper;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
+using System.Security.Cryptography.X509Certificates;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,57 +42,54 @@ builder.Services.AddSingleton<IMongoDatabase>(provider =>
     return client.GetDatabase(mongoSettings.Database);
 });
 
-builder.Services.Configure<CoursesFileStorageSettings>(builder.Configuration.GetSection("CoursesFileStorage"));
-builder.Services.Configure<LessonsFileStorageSettings>(builder.Configuration.GetSection("LessonsFileStorage"));
 
-// Регистрация сервиса для файлов
-builder.Services.AddScoped<IFileService>(provider =>
-{
-    string rootPath = provider.GetService<IOptions<CoursesFileStorageSettings>>().Value.RootPath;
+//builder.Services.AddScoped<ILessonsRepository>(provider =>
 
-    var coursesStoragePath = Path.Combine(Directory.GetCurrentDirectory(), rootPath);
+//    new LessonsRepository(
+//        provider.GetRequiredService<IMongoDatabase>()
+//    )
+//);
 
-    if (!Directory.Exists(coursesStoragePath))
-    {
-        Directory.CreateDirectory(coursesStoragePath);
-    }
+//builder.Services.AddScoped<ILessonFilesRepository>(provider =>
+//    new LessonFilesRepository(
+//        provider.GetRequiredService<IMongoDatabase>()
+//    )
+//);
 
-    rootPath = provider.GetService<IOptions<LessonsFileStorageSettings>>().Value.RootPath;
+//builder.Services.AddScoped<ICourseFilesRepository>(provider =>
+//    new CourseFilesRepository(
+//        provider.GetRequiredService<IMongoDatabase>()
+//    )
+//);
 
-    var lessonsStoragePath = Path.Combine(Directory.GetCurrentDirectory(), rootPath);
-
-    return new FileService(coursesStoragePath, lessonsStoragePath);
-});
-
-
-builder.Services.AddScoped<ILessonsRepository>(provider =>
-
-    new LessonsRepository(
-        provider.GetRequiredService<IMongoDatabase>()
-    )
-);
-
-builder.Services.AddScoped<ILessonFilesRepository>(provider =>
-    new LessonFilesRepository(
-        provider.GetRequiredService<IMongoDatabase>()
-    )
-);
-
-builder.Services.AddScoped<ICourseFilesRepository>(provider =>
-    new CourseFilesRepository(
-        provider.GetRequiredService<IMongoDatabase>()
-    )
-);
-
-builder.Services.AddScoped<ICoursesRepository>(provider =>
-    new CoursesRepository(
-        provider.GetRequiredService<IMongoDatabase>()
-    )
-);
+//builder.Services.AddScoped<ICoursesRepository>(provider =>
+//    new CoursesRepository(
+//        provider.GetRequiredService<IMongoDatabase>()
+//    )
+//);
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-builder.Services.AddHttpClient();
+builder.Services.AddHttpClient<ICommandDataClient, HttpCommandDataClient>();
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(10001, listenOptions =>
+    {
+        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+        listenOptions.UseHttps(httpsOptions =>
+        {
+            httpsOptions.ServerCertificate = new X509Certificate2(
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                ".aspnet",
+                "https",
+                "kgttedu.pfx"
+                ),
+                "txrnxshxd!"
+            );
+        });
+    });
+});
 
 var app = builder.Build();
 

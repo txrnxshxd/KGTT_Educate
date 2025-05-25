@@ -1,10 +1,11 @@
-﻿using KGTT_Educate.Services.Courses.Data.Interfaces.Services;
-using KGTT_Educate.Services.Courses.Data.Interfaces.UoW;
+﻿using KGTT_Educate.Services.Courses.Data.Interfaces.UoW;
 using KGTT_Educate.Services.Courses.Models;
 using KGTT_Educate.Services.Courses.Models.Dto;
+using KGTT_Educate.Services.Courses.SyncDataServices.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MongoDB.Driver;
+using System.Text.Json;
 
 namespace KGTT_Educate.Services.Courses.Controllers
 {
@@ -12,19 +13,14 @@ namespace KGTT_Educate.Services.Courses.Controllers
     [ApiController]
     public class CoursesController : ControllerBase
     {
-        //private readonly ICourseRepository _courseRepository;
-        //private readonly ICourseFilesRepository _courseFilesRepository;
+        // СДЕЛАТЬ УДАЛЕНИЕ ФАЙЛОВ АСИНХРОННО
         private readonly IUnitOfWork _uow;
-        private readonly IFileService _fileService;
-        private readonly IHttpClientFactory _httpClient;
+        private readonly ICommandDataClient _http;
 
-        public CoursesController(IUnitOfWork uow, IFileService fileService, IHttpClientFactory httpClient)
+        public CoursesController(IUnitOfWork uow, ICommandDataClient http)
         {
-            //_courseRepository = repo;
-            //_courseFilesRepository = files;
             _uow = uow;
-            _fileService = fileService;
-            _httpClient = httpClient;
+            _http = http;
         }
 
 
@@ -60,34 +56,6 @@ namespace KGTT_Educate.Services.Courses.Controllers
             return Ok();
         }
 
-
-        //TODO
-        [HttpGet("Files/Download/{fileId}")]
-        public async Task<ActionResult> DownloadFile(int fileId)
-        {
-            if (fileId <= 0) return BadRequest();
-
-            CourseFile file = await _uow.CourseFiles.GetByIdAsync(fileId);
-
-            if (file == null) return NotFound();
-
-            // ПОЛНЫЙ ПУТЬ
-            // FULL PATH
-            var httpClient = _httpClient.CreateClient();
-
-            using var httpResponse = await httpClient.GetAsync($"http://192.168.0.37:10005/Download/{file.LocalFilePath}");
-
-            //if (httpResponse.IsSuccessStatusCode)
-            //{
-            //    using var contentStream = await httpResponse.Content.ReadAsStreamAsync();
-
-
-            //}
-
-            return Ok();
-        }
-
-        //TODO
         [HttpGet("Files/{courseId}")]
         public async Task<ActionResult> GetFilesByCourseId(int courseId)
         {
@@ -95,11 +63,9 @@ namespace KGTT_Educate.Services.Courses.Controllers
 
             if (files == null || files.Count() == 0) return NotFound(new { Message = "Не найдено" });
 
-            //return Ok(files.Adapt<IEnumerable<FileDTO>>());
-            return Ok();
+            return Ok(files);
         }
 
-        //TODO
         [HttpPost]
         public async Task<ActionResult<CourseRequest>> Create([FromForm] CourseRequest courseRequest)
         {
@@ -116,11 +82,28 @@ namespace KGTT_Educate.Services.Courses.Controllers
 
             if (courseRequest.FormFile != null)
             {
-                //var httpClient = _httpClient.CreateClient();
-                //using var response = await httpClient.PostAsync($"http://192.168.0.37:10005/Upload", courseRequest.FormFile);
+                try
+                {
+                    using HttpResponseMessage response = await _http.SendFile(courseRequest.FormFile, "Courses");
 
-                //course.PreviewPhotoPath = ;
-                //course.LocalPreviewPhotoPath = wwwrootPath;
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        var error = await response.Content.ReadAsStringAsync();
+                        return StatusCode((int)response.StatusCode, $"Ошибка загрузки файла: {error}");
+                    }
+
+                    var result = await response.Content.ReadFromJsonAsync<FilesApiResponse>();
+
+                    course.LocalPreviewPhotoPath = result.LocalFilePath;
+                }
+                catch (HttpRequestException ex)
+                {
+                    Console.WriteLine($"Ошибка сети: {ex.Message}");
+                }
+                catch (JsonException ex)
+                {
+                    Console.WriteLine($"Ошибка JSON: {ex.Message}");;
+                }
             }
 
             await _uow.Courses.CreateAsync(course);
@@ -128,11 +111,61 @@ namespace KGTT_Educate.Services.Courses.Controllers
             return Ok(new { message = $"Курс {course.Name} успешно создан!" });
         }
 
-        //TODO
         [HttpPut("{id}")]
-        public async Task<ActionResult> Update(int id, Course course)
+        public async Task<ActionResult> Update(int id, CourseRequest courseRequest)
         {
-            if (id != course.Id) return BadRequest();
+            if (courseRequest == null || id == 0) return BadRequest();
+
+            Course course = await _uow.Courses.GetByIdAsync(id);
+
+            if (course == null) return NotFound();
+
+            course.Name = courseRequest.Name;
+            course.Description = courseRequest.Description;
+
+            if (courseRequest.FormFile != null)
+            {
+                try
+                {
+                    using HttpResponseMessage response = await _http.SendFile(courseRequest.FormFile, "Courses");
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        var error = await response.Content.ReadAsStringAsync();
+                        Console.WriteLine(StatusCode((int)response.StatusCode, $"Ошибка загрузки файла: {error}"));
+                    }
+
+                    var result = await response.Content.ReadFromJsonAsync<FilesApiResponse>();
+
+                    course.LocalPreviewPhotoPath = result.LocalFilePath;
+                }
+                catch (HttpRequestException ex)
+                {
+                    Console.WriteLine($"Ошибка сети: {ex.Message}");
+                }
+                catch (JsonException ex)
+                {
+                    Console.WriteLine($"Ошибка JSON: {ex.Message}"); ;
+                }
+            }
+            else
+            {
+                if (course.LocalPreviewPhotoPath != null)
+                {
+                    using HttpResponseMessage response = await _http.DeleteFile(Uri.EscapeDataString(course.LocalPreviewPhotoPath));
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        var error = await response.Content.ReadAsStringAsync();
+                        Console.WriteLine(StatusCode((int)response.StatusCode, $"Ошибка удаления файла: {error}"));
+                    }
+                    else
+                    {
+                        course.LocalPreviewPhotoPath = null;
+                    }
+
+                }
+            }
 
             try
             {
@@ -144,10 +177,9 @@ namespace KGTT_Educate.Services.Courses.Controllers
                 return BadRequest();
             }
 
-            return Ok();
+            return Ok(course);
         }
 
-        //TODO
         [HttpDelete]
         public async Task<ActionResult> Delete(int id)
         {
@@ -160,9 +192,13 @@ namespace KGTT_Educate.Services.Courses.Controllers
                 foreach (CourseFile courseFile in courseFiles)
                 {
 
-                    string fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", courseFile.LocalFilePath);
+                    using HttpResponseMessage response = await _http.DeleteFile(Uri.EscapeDataString(courseFile.LocalFilePath));
 
-                    await _fileService.DeleteFileAsync(fullPath);
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        var error = await response.Content.ReadAsStringAsync();
+                        Console.WriteLine(StatusCode((int)response.StatusCode, $"Ошибка удаления файла: {error}"));
+                    }
                 }
 
             }
@@ -173,10 +209,13 @@ namespace KGTT_Educate.Services.Courses.Controllers
             {
                 foreach (LessonFile lessonFile in lessonFiles)
                 {
+                    using HttpResponseMessage response = await _http.DeleteFile(Uri.EscapeDataString(lessonFile.LocalFilePath));
 
-                    string fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", lessonFile.LocalFilePath);
-
-                    await _fileService.DeleteFileAsync(fullPath);
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        var error = await response.Content.ReadAsStringAsync();
+                        Console.WriteLine(StatusCode((int)response.StatusCode, $"Ошибка удаления файла: {error}"));
+                    }
                 }
             }
 
@@ -193,51 +232,53 @@ namespace KGTT_Educate.Services.Courses.Controllers
         }
 
 
-        //TODO
         [HttpPost("Files/{courseId}")]
         public async Task<ActionResult> UploadFile(int courseId, IFormFile file, bool isPinned = false)
         {
             Course course = await _uow.Courses.GetByIdAsync(courseId);
+            CourseFile lastFile = await _uow.CourseFiles.GetLastAsync();
 
             if (course == null) return NotFound();
 
-            //try
-            //{
+            try
+            {
+                using HttpResponseMessage response = await _http.SendFile(file, "Courses");
 
-            //CourseFile courseFile = new CourseFile
-            //{
-            //    Id = lastFile == null ? 1 : lastFile.Id + 1,
-            //    CourseId = courseId,
-            //    OriginalName = file.FileName,
-            //    FileName = fileName,
-            //    FullFilePath = filePath,
-            //    LocalFilePath = wwwrootPath,
-            //    IsMedia = isMedia,
-            //    Course = course,
-            //    IsPinned = isMedia ? isPinned : true // Медиафайлы могут быть и на UI, и как прикрепленный файл, остальные будут помечены как прикрепленный файл
-            //};
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    return StatusCode((int)response.StatusCode, $"Ошибка загрузки файла: {error}");
+                }
 
-            //await _uow.CourseFiles.CreateAsync(courseFile);
+                var result = await response.Content.ReadFromJsonAsync<FilesApiResponse>();
 
-            //return Ok(new { 
-            //    WwwrootPath = wwwrootPath, 
-            //    FileName = fileName, 
-            //    IsMedia = isMedia, 
-            //    FilePath = filePath, 
-            //    OriginalName = courseFile.OriginalName, 
-            //    IsPinned = courseFile.IsPinned
-            //});
-            //}
-            //catch (Exception ex)
-            //{
-            //    //return StatusCode(500, "Ошибка загрузки файла");
-            //    return StatusCode(500, ex.Message);
-            //}
+                course.LocalPreviewPhotoPath = result.LocalFilePath;
 
-            return Ok();
+                CourseFile courseFile = new CourseFile
+                {
+                    Id = lastFile == null ? 1 : lastFile.Id + 1,
+                    CourseId = courseId,
+                    OriginalName = result.OriginalName,
+                    FileName = result.FileName,
+                    LocalFilePath = result.LocalFilePath,
+                    Course = course,
+                    IsPinned = isPinned
+                };
+
+                await _uow.CourseFiles.CreateAsync(courseFile);
+
+                return Ok(courseFile);
+            }
+            catch (HttpRequestException ex)
+            {
+                return StatusCode(500, $"Ошибка сети: {ex.Message}");
+            }
+            catch (JsonException ex)
+            {
+                return StatusCode(500, $"Ошибка JSON: {ex.Message}");
+            }
         }
 
-        // TODO
         [HttpDelete("Files/{fileId}")]
         public async Task<ActionResult> DeleteFile(int fileId)
         {
@@ -245,10 +286,28 @@ namespace KGTT_Educate.Services.Courses.Controllers
 
             if (file == null) return NotFound();
 
+            try
+            {
+                using HttpResponseMessage response = await _http.DeleteFile(Uri.EscapeDataString(file.LocalFilePath));
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    return StatusCode((int)response.StatusCode, $"Ошибка удаления файла: {error}");
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                return StatusCode(500, $"Ошибка сети: {ex.Message}");
+            }
+            catch (JsonException ex)
+            {
+                return StatusCode(500, $"Ошибка JSON: {ex.Message}");
+            }
 
             await _uow.CourseFiles.DeleteAsync(fileId);
 
-            return Ok(new { FileName = file.FileName });
+            return Ok(file);
         }
     }
 }

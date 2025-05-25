@@ -18,6 +18,10 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\" />
+    <Folder Include="wwwroot\Accounts\Media\" />
+    <Folder Include="wwwroot\Courses\Media\" />
+    <Folder Include="wwwroot\Lessons\Files\" />
+    <Folder Include="wwwroot\Lessons\Media\" />
   </ItemGroup>
 
 </Project>
