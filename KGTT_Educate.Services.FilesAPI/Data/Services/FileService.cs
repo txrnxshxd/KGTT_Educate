@@ -62,25 +62,5 @@ namespace KGTT_Educate.Services.FilesAPI.Data.Services
 
             return Task.CompletedTask;
         }
-
-        public async Task DownloadFileAsync(string filePath, HttpResponse response)
-        {
-            if (!File.Exists(filePath))
-            {
-                throw new FileNotFoundException("File not found", filePath);
-            }
-
-            var fileInfo = new FileInfo(filePath);
-            //var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-            using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
-            {
-                response.Headers.Add("Content-Disposition", $"attachment; filename=\"{fileInfo.Name}\"");
-                response.Headers.Add("Content-Length", fileInfo.Length.ToString());
-                response.ContentType = "application/octet-stream";
-
-                await fileStream.CopyToAsync(response.Body);
-                await response.Body.FlushAsync();
-            }
-        }
     }
 }

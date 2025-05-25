@@ -1,5 +1,7 @@
 ﻿using KGTT_Educate.Services.FilesAPI.Data.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.StaticFiles;
+using System.IO;
 
 namespace KGTT_Educate.Services.FilesAPI.Controllers
 {
@@ -8,30 +10,27 @@ namespace KGTT_Educate.Services.FilesAPI.Controllers
     public class FilesController : ControllerBase
     {
         private readonly IFileService _fileService;
+        private readonly IContentTypeProvider _contentTypeProvider;
 
         public FilesController(IFileService fileService)
         {
             _fileService = fileService;
+            _contentTypeProvider = new FileExtensionContentTypeProvider();
         }
 
-        [HttpGet("Download/{path}")]
-        public async Task<ActionResult> DownloadFile(string path)
+        [HttpGet("Get/{path}")]
+        public IActionResult GetFile(string path)
         {
             if (string.IsNullOrEmpty(path)) return BadRequest();
 
-            try
+            string wwwrootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", path);
+
+            if (_contentTypeProvider.TryGetContentType(wwwrootPath, out var contentType))
             {
-                // ПРОБУЕМ СКАЧАТЬ ФАЙЛ
-                // TRY TO DOWNLOAD FILE
-                await _fileService.DownloadFileAsync(path, HttpContext.Response);
-                return new EmptyResult();
+                contentType = "application/octet-stream";
             }
-            catch (FileNotFoundException)
-            {
-                // ЕСЛИ НЕ НАШЛИ, КИДАЕМ NF
-                // IF FILE WASN'T FOUND, THROW NOT FOUND
-                return NotFound();
-            }
+
+            return PhysicalFile(wwwrootPath, contentType, enableRangeProcessing: true);
         }
 
         [HttpPost("Upload")]

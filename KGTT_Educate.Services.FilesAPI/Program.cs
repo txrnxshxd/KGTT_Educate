@@ -19,24 +19,6 @@ builder.Services.Configure<FileStorage>(builder.Configuration.GetSection("FileSt
 
 builder.Services.AddScoped<IFileService>(provider =>
 {
-    string rootPath = provider.GetService<IOptions<FileStorage>>().Value.Lessons.RootPath;
-
-    var coursesStoragePath = Path.Combine(Directory.GetCurrentDirectory(), rootPath);
-
-    if (!Directory.Exists(coursesStoragePath))
-    {
-        Directory.CreateDirectory(coursesStoragePath);
-    }
-
-    rootPath = provider.GetService<IOptions<FileStorage>>().Value.Courses.RootPath;
-
-    var lessonsStoragePath = Path.Combine(Directory.GetCurrentDirectory(), rootPath);
-
-    if (!Directory.Exists(lessonsStoragePath))
-    {
-        Directory.CreateDirectory(lessonsStoragePath);
-    }
-
     return new FileService(builder.Configuration);
 });
 
