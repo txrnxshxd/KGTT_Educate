@@ -4,7 +4,37 @@ option csharp_namespace = "KGTT_Educate.Services.Account";
 
 service UserService {
 	rpc GetUserGroup (GetUserGroupRequest) returns (GetUserGroupResponse);
+    rpc GetUserRole (GetUserRoleRequest) returns (GetUserRoleResponse);
 }
+
+// User
+message UserDTO {
+    string id = 1;
+    string login = 2;
+    string email = 3;
+    string phone_number = 4;
+    string telegram = 5;
+    string last_name = 6;
+    string first_name = 7;
+    string middle_name = 8;
+    string avatar_local_path = 9;
+    string avatar_full_path = 10;
+}
+
+// Role
+
+message GrpcRole {
+    string id = 1;
+    string name = 2;
+}
+
+// Group
+message GroupDTO {
+    string id = 1;
+    string name = 2;
+}
+
+// UserGroup
 
 message GetUserGroupRequest {
     string group_id = 1;
@@ -19,20 +49,17 @@ message UserGroupDTO {
     GroupDTO group = 2;
 }
 
-message UserDTO {
-    string id = 1;
-    string login = 2;
-    string email = 3;
-    string phone_number = 4;
-    string telegram = 5;
-    string last_name = 6;
-    string first_name = 7;
-    string middle_name = 8;
-    string avatar_local_path = 9;
-    string avatar_full_path = 10;
+// UserRole
+
+message GetUserRoleRequest {
+    string user_id = 1;
 }
 
-message GroupDTO {
-    string id = 1;
-    string name = 2;
+message GetUserRoleResponse {
+    UserRoleDTO user_role = 1;
+}
+
+message UserRoleDTO {
+    UserDTO user = 1;
+    GrpcRole role = 2;
 }
