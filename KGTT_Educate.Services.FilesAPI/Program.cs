@@ -1,7 +1,9 @@
 using KGTT_Educate.Services.FilesAPI.Data.Interfaces.Services;
 using KGTT_Educate.Services.FilesAPI.Data.Services;
 using KGTT_Educate.Services.FilesAPI.Utils;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Options;
+using System.Security.Cryptography.X509Certificates;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +22,25 @@ builder.Services.Configure<FileStorage>(builder.Configuration.GetSection("FileSt
 builder.Services.AddScoped<IFileService>(provider =>
 {
     return new FileService(builder.Configuration);
+});
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(10005, listenOptions =>
+    {
+        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+        listenOptions.UseHttps(httpsOptions =>
+        {
+            httpsOptions.ServerCertificate = new X509Certificate2(
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                ".aspnet",
+                "https",
+                "kgttedu.pfx"
+                ),
+                "txrnxshxd!"
+            );
+        });
+    });
 });
 
 var app = builder.Build();
