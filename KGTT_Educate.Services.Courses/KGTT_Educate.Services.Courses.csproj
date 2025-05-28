@@ -33,4 +33,8 @@
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
+	<ItemGroup>
+		<Protobuf Include="Protos\account.proto" GrpcServices="Client" ProtoRoot="Protos" />
+	</ItemGroup>
+
 </Project>

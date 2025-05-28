@@ -114,7 +114,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
         {
             if (id <= 0) return BadRequest();
 
-            IEnumerable<LessonFile> lessonFiles = await _uow.LessonFiles.GetByCourseIdAsync(id);
+            IEnumerable<LessonFile> lessonFiles = await _uow.LessonFiles.GetByLessonIdAsync(id);
 
             if (lessonFiles != null && lessonFiles.Count() > 0)
             {
@@ -138,14 +138,13 @@ namespace KGTT_Educate.Services.Courses.Controllers
                     {
                         return StatusCode(500, $"Ошибка JSON: {ex.Message}");
                     }
+
                 }
 
             }
+            await _uow.LessonFiles.DeleteByLessonIdAsync(id);
 
-
-            await _uow.Lessons.DeleteByCourseIdAsync(id);
-
-            await _uow.LessonFiles.DeleteByCourseIdAsync(id);
+            await _uow.Lessons.DeleteAsync(id);
 
             return Ok(new { message = $"Урок удален" });
         }
@@ -156,6 +155,10 @@ namespace KGTT_Educate.Services.Courses.Controllers
             Lesson lesson = await _uow.Lessons.GetByIdAsync(lessonId);
 
             if (lesson == null) return NotFound();
+
+            IEnumerable<LessonFile> lessonFiles = await _uow.LessonFiles.GetByLessonIdAsync(lessonId);
+
+            if (lessonFiles.Count() >= 5) return BadRequest(new { message = "Вы не можете загрузить больше 5 файлов на урок" });
 
             try
             {

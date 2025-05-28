@@ -8,5 +8,6 @@ namespace KGTT_Educate.Services.Courses.Data.Interfaces.UoW
         ICoursesRepository Courses { get; }
         ILessonFilesRepository LessonFiles { get; }
         ILessonsRepository Lessons { get; }
+        ICourseGroupRepository CourseGroup { get; }
     }
 }

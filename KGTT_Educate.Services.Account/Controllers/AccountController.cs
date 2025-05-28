@@ -25,7 +25,7 @@ namespace KGTT_Educate.Services.Account.Controllers
         {
             IEnumerable<User> users = _uow.Users.GetAll();
 
-            return Ok(users.Adapt<IEnumerable<UserDTO>>());
+            return Ok(users.Adapt<IEnumerable<Models.Dto.UserDTO>>());
         }
 
         [HttpGet("{id}")]
@@ -45,7 +45,7 @@ namespace KGTT_Educate.Services.Account.Controllers
 
             if (userGroup.Count() == 0) return NotFound();
 
-            return Ok(userGroup.Adapt<IEnumerable<UserGroupDTO>>());
+            return Ok(userGroup.Adapt<IEnumerable<Models.Dto.UserGroupDTO>>());
         }
 
         [HttpPost]
@@ -129,7 +129,7 @@ namespace KGTT_Educate.Services.Account.Controllers
 
             // Запрос к FilesAPI, после записываем пути к файлу в user
 
-            return Ok(user.Adapt<UserDTO>());
+            return Ok(user.Adapt<Models.Dto.UserDTO>());
         }
 
         [HttpDelete("{id}")]
@@ -143,7 +143,7 @@ namespace KGTT_Educate.Services.Account.Controllers
 
             _uow.Save();
 
-            return Ok(user.Adapt<UserDTO>());
+            return Ok(user.Adapt<Models.Dto.UserDTO>());
         }
     }
 }

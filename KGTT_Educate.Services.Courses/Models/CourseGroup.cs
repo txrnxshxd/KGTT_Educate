@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using MongoDB.Bson.Serialization.Attributes;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KGTT_Educate.Services.Courses.Models
 {
@@ -8,6 +9,7 @@ namespace KGTT_Educate.Services.Courses.Models
         public int CourseId { get; set; }
         [ForeignKey(nameof(CourseId))]
         public Course? Course { get; set; }
-        public int GroupId { get; set; }
+        [BsonRepresentation(MongoDB.Bson.BsonType.String)]
+        public Guid GroupId { get; set; }
     }
 }

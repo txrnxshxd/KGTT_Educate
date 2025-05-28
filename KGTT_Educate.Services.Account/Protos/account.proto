@@ -5,6 +5,7 @@ option csharp_namespace = "KGTT_Educate.Services.Account";
 service UserService {
 	rpc GetUserGroup (GetUserGroupRequest) returns (GetUserGroupResponse);
     rpc GetUserRole (GetUserRoleRequest) returns (GetUserRoleResponse);
+    rpc GetGroup (GetGroupRequest) returns (GetGroupResponse);
 }
 
 // User
@@ -32,6 +33,14 @@ message GrpcRole {
 message GroupDTO {
     string id = 1;
     string name = 2;
+}
+
+message GetGroupRequest {
+    string id = 1;
+}
+
+message GetGroupResponse {
+    GroupDTO group = 1;
 }
 
 // UserGroup

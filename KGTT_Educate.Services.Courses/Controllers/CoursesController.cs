@@ -1,9 +1,13 @@
 ﻿using KGTT_Educate.Services.Courses.Data.Interfaces.UoW;
 using KGTT_Educate.Services.Courses.Models;
 using KGTT_Educate.Services.Courses.Models.Dto;
+using KGTT_Educate.Services.Courses.SyncDataServices.Grpc;
 using KGTT_Educate.Services.Courses.SyncDataServices.Http;
+using Mapster;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Text.Json;
 
@@ -15,12 +19,16 @@ namespace KGTT_Educate.Services.Courses.Controllers
     {
         // СДЕЛАТЬ УДАЛЕНИЕ ФАЙЛОВ АСИНХРОННО
         private readonly IUnitOfWork _uow;
-        private readonly ICommandDataClient _http;
+        private readonly ICommandDataClient _httpCommand;
+        private readonly IReadOnlyDataClient _httpRead;
+        private readonly IConfiguration _configuration;
 
-        public CoursesController(IUnitOfWork uow, ICommandDataClient http)
+        public CoursesController(IUnitOfWork uow, ICommandDataClient httpCommand, IReadOnlyDataClient httpRead, IConfiguration configuration)
         {
             _uow = uow;
-            _http = http;
+            _httpCommand = httpCommand;
+            _httpRead = httpRead;
+            _configuration = configuration;
         }
 
 
@@ -51,9 +59,46 @@ namespace KGTT_Educate.Services.Courses.Controllers
 
         //TODO
         [HttpGet("Group/{groupId}")]
-        public async Task<ActionResult<Course>> GetByGroupId(int groupId)
+        public async Task<ActionResult<Course>> GetByGroupId(Guid groupId)
         {
-            return Ok();
+            var grpcClient = new GrpcAccountClient(_configuration);
+
+            GroupDTO group = await grpcClient.GetGroupAsync(groupId);
+
+            if (group == null) return NotFound("Группа не найдена");
+
+            IEnumerable<CourseGroup> courseGroup = await _uow.CourseGroup.GetByGroupId(groupId);
+
+            if (courseGroup == null) return NotFound($"Не найдено ни одного курса для группы {group.Name}");
+
+            return Ok(courseGroup);
+        }
+
+        [HttpPost("Group")]
+        public async Task<ActionResult> AddGroupToCourse(int courseId, Guid groupId)
+        {
+            Course course = await _uow.Courses.GetByIdAsync(courseId);
+
+            if (course == null) return NotFound(new { message = "Курс не найден" });
+
+            var grpcClient = new GrpcAccountClient(_configuration);
+
+            GroupDTO group = await grpcClient.GetGroupAsync(groupId);
+
+            if (group == null) return NotFound(new { message = "Группа не найдена" });
+
+            CourseGroup last = await _uow.CourseGroup.GetLastAsync();
+
+            CourseGroup courseGroup = new()
+            {
+                Id = last == null ? 1 : last.Id + 1,
+                CourseId = courseId,
+                Course = course,
+                GroupId = group.Id
+            };
+            await _uow.CourseGroup.CreateAsync(courseGroup);
+
+            return Ok(courseGroup);
         }
 
         [HttpGet("Files/{courseId}")]
@@ -84,7 +129,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
             {
                 try
                 {
-                    using HttpResponseMessage response = await _http.SendFile(courseRequest.FormFile, "Courses");
+                    using HttpResponseMessage response = await _httpCommand.SendFile(courseRequest.FormFile, "Courses");
 
                     if (!response.IsSuccessStatusCode)
                     {
@@ -127,7 +172,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
             {
                 try
                 {
-                    using HttpResponseMessage response = await _http.SendFile(courseRequest.FormFile, "Courses");
+                    using HttpResponseMessage response = await _httpCommand.SendFile(courseRequest.FormFile, "Courses");
 
                     if (!response.IsSuccessStatusCode)
                     {
@@ -152,7 +197,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
             {
                 if (course.LocalPreviewPhotoPath != null)
                 {
-                    using HttpResponseMessage response = await _http.DeleteFile(course.LocalPreviewPhotoPath);
+                    using HttpResponseMessage response = await _httpCommand.DeleteFile(course.LocalPreviewPhotoPath);
 
                     if (!response.IsSuccessStatusCode)
                     {
@@ -192,7 +237,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
                 foreach (CourseFile courseFile in courseFiles)
                 {
 
-                    using HttpResponseMessage response = await _http.DeleteFile(courseFile.LocalFilePath);
+                    using HttpResponseMessage response = await _httpCommand.DeleteFile(courseFile.LocalFilePath);
 
                     if (!response.IsSuccessStatusCode)
                     {
@@ -209,7 +254,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
             {
                 foreach (LessonFile lessonFile in lessonFiles)
                 {
-                    using HttpResponseMessage response = await _http.DeleteFile(lessonFile.LocalFilePath);
+                    using HttpResponseMessage response = await _httpCommand.DeleteFile(lessonFile.LocalFilePath);
 
                     if (!response.IsSuccessStatusCode)
                     {
@@ -231,18 +276,45 @@ namespace KGTT_Educate.Services.Courses.Controllers
             return Ok(new { message = "Курс удален" });
         }
 
+        [HttpGet("Files/Get/{fileId}")]
+        public async Task<ActionResult> GetFile(int fileId)
+        {
+            if (fileId <= 0) return BadRequest();
+
+            CourseFile file = await _uow.CourseFiles.GetByIdAsync(fileId);
+
+            try
+            {
+                var (fileStream, contentType) = await _httpRead.GetFile(file.LocalFilePath);
+                return File(fileStream, contentType);
+            }
+            catch (HttpRequestException ex)
+            {
+                return StatusCode((int)ex.StatusCode!, $"Ошибка сети: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
 
         [HttpPost("Files/{courseId}")]
         public async Task<ActionResult> UploadFile(int courseId, IFormFile file, bool isPinned = false)
         {
             Course course = await _uow.Courses.GetByIdAsync(courseId);
-            CourseFile lastFile = await _uow.CourseFiles.GetLastAsync();
 
             if (course == null) return NotFound();
 
+            IEnumerable<CourseFile> courseFiles = await _uow.CourseFiles.GetByCourseIdAsync(course.Id);
+
+            if (courseFiles.Count() >= 5) return BadRequest(new {message = "Вы не можете загрузить больше 5 файлов на курс"});
+
+            CourseFile lastFile = await _uow.CourseFiles.GetLastAsync();
+
             try
             {
-                using HttpResponseMessage response = await _http.SendFile(file, "Courses");
+                using HttpResponseMessage response = await _httpCommand.SendFile(file, "Courses");
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -288,7 +360,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
 
             try
             {
-                using HttpResponseMessage response = await _http.DeleteFile(file.LocalFilePath);
+                using HttpResponseMessage response = await _httpCommand.DeleteFile(file.LocalFilePath);
 
                 if (!response.IsSuccessStatusCode)
                 {

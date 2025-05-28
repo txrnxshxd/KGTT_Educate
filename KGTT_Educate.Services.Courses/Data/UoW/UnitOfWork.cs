@@ -15,6 +15,7 @@ namespace KGTT_Educate.Services.Courses.Data.UoW
         public ILessonFilesRepository LessonFiles { get; private set; }
 
         public ILessonsRepository Lessons { get; private set; }
+        public ICourseGroupRepository CourseGroup { get; private set; }
 
         public UnitOfWork(IMongoDatabase db)
         {
@@ -23,6 +24,7 @@ namespace KGTT_Educate.Services.Courses.Data.UoW
             Courses = new CoursesRepository(db);
             LessonFiles = new LessonFilesRepository(db);
             Lessons = new LessonsRepository(db);
+            CourseGroup = new CourseGroupRepository(db);
         }
     }
 }
