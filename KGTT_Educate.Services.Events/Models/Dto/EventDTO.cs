@@ -1,16 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
-namespace KGTT_Educate.Services.Events.Models
+namespace KGTT_Educate.Services.Events.Models.Dto
 {
-    public class Event
+    public class EventDTO
     {
-        [Key]
-        public Guid Id { get; set; }
         public string? Name { get; set; }
         [Required]
         public string Description { get; set; } = string.Empty;
-        public string? MediaLocalPath { get; set; }
         public string? EventLocation { get; set; }
         [Column(TypeName = "decimal(18,2)")]
         public decimal Price { get; set; }

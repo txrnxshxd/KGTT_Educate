@@ -7,7 +7,7 @@ namespace KGTT_Educate.Services.Events.Models.Dto
     {
         [Key]
         public Guid Id { get; set; }
-        public UserDTO User { get; set; }
+        public Guid UserId { get; set; }
         public Event Event { get; set; }
     }
 }

@@ -6,6 +6,8 @@ service UserService {
 	rpc GetUserGroup (GetUserGroupRequest) returns (GetUserGroupResponse);
     rpc GetUserRole (GetUserRoleRequest) returns (GetUserRoleResponse);
     rpc GetGroup (GetGroupRequest) returns (GetGroupResponse);
+    rpc GetUser (GetUserRequest) returns (GetUserResponse);
+
 }
 
 // User
@@ -13,13 +15,17 @@ message UserDTO {
     string id = 1;
     string login = 2;
     string email = 3;
-    string phone_number = 4;
-    string telegram = 5;
     string last_name = 6;
     string first_name = 7;
     string middle_name = 8;
-    string avatar_local_path = 9;
-    string avatar_full_path = 10;
+}
+
+message GetUserRequest {
+    string id = 1;
+}
+
+message GetUserResponse {
+    UserDTO user = 1;
 }
 
 // Role

@@ -20,14 +20,12 @@ namespace KGTT_Educate.Services.Courses.Controllers
         // СДЕЛАТЬ УДАЛЕНИЕ ФАЙЛОВ АСИНХРОННО
         private readonly IUnitOfWork _uow;
         private readonly ICommandDataClient _httpCommand;
-        private readonly IReadOnlyDataClient _httpRead;
         private readonly IConfiguration _configuration;
 
-        public CoursesController(IUnitOfWork uow, ICommandDataClient httpCommand, IReadOnlyDataClient httpRead, IConfiguration configuration)
+        public CoursesController(IUnitOfWork uow, ICommandDataClient httpCommand, IConfiguration configuration)
         {
             _uow = uow;
             _httpCommand = httpCommand;
-            _httpRead = httpRead;
             _configuration = configuration;
         }
 
@@ -276,27 +274,27 @@ namespace KGTT_Educate.Services.Courses.Controllers
             return Ok(new { message = "Курс удален" });
         }
 
-        [HttpGet("Files/Get/{fileId}")]
-        public async Task<ActionResult> GetFile(int fileId)
-        {
-            if (fileId <= 0) return BadRequest();
+        //[HttpGet("Files/Get/{fileId}")]
+        //public async Task<ActionResult> GetFile(int fileId)
+        //{
+        //    if (fileId <= 0) return BadRequest();
 
-            CourseFile file = await _uow.CourseFiles.GetByIdAsync(fileId);
+        //    CourseFile file = await _uow.CourseFiles.GetByIdAsync(fileId);
 
-            try
-            {
-                var (fileStream, contentType) = await _httpRead.GetFile(file.LocalFilePath);
-                return File(fileStream, contentType);
-            }
-            catch (HttpRequestException ex)
-            {
-                return StatusCode((int)ex.StatusCode!, $"Ошибка сети: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
+        //    try
+        //    {
+        //        var (fileStream, contentType) = await _httpRead.GetFile(file.LocalFilePath);
+        //        return File(fileStream, contentType);
+        //    }
+        //    catch (HttpRequestException ex)
+        //    {
+        //        return StatusCode((int)ex.StatusCode!, $"Ошибка сети: {ex.Message}");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+        //}
 
 
         [HttpPost("Files/{courseId}")]

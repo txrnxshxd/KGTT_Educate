@@ -2,6 +2,7 @@
 using KGTT_Educate.Services.Events.Models;
 using KGTT_Educate.Services.Events.Models.Dto;
 using KGTT_Educate.Services.Events.SyncDataServices.Grpc;
+using Mapster;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,7 +24,7 @@ namespace KGTT_Educate.Services.Events.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            IEnumerable<Event> events = _uow.Events.GetAll();
+            IEnumerable<Event> events = _uow.Events.GetAll().OrderByDescending(x => x.Date);
 
             if (!events.Any()) return NotFound("Не найдено ни одного объекта");
 
@@ -38,12 +39,13 @@ namespace KGTT_Educate.Services.Events.Controllers
             return Ok(evnt);
         }
 
+
         [HttpPost]
-        public IActionResult Post([FromForm] Event evnt)
+        public IActionResult Post([FromForm] EventDTO evnt)
         {
             if (evnt == null) return BadRequest();
 
-            _uow.Events.Add(evnt);
+            _uow.Events.Add(evnt.Adapt<Event>());
 
             _uow.Save();
 
@@ -62,6 +64,29 @@ namespace KGTT_Educate.Services.Events.Controllers
             _uow.Save();
 
             return Ok(evnt);
+        }
+
+        // Пользователи мероприятия
+        [HttpGet("Users/{eventId}")]
+        public IActionResult GetEventUsers(Guid eventId)
+        {
+            IEnumerable<EventUser> users = _uow.EventUser.GetMany(x => x.EventId == eventId, "Event");
+
+            if (!users.Any()) return NotFound();
+
+            return Ok(users);
+        }
+
+        // Получение пользователей по 
+        [HttpGet("Group/{groupId}")]
+        public IActionResult GetEventGroupUsers(Guid groupId)
+        {
+            var grpcClient = new GrpcAccountClient(_configuration);
+            IEnumerable<UserGroupDTO> users = grpcClient.GetUserGroup(groupId);
+
+            if (users == null || users.Count() == 0) return NotFound();
+
+            return Ok(users);
         }
 
         [HttpPost("Group/{groupId}")]

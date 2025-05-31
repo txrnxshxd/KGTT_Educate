@@ -16,7 +16,7 @@ namespace KGTT_Educate.Services.Account.Models
         [Required]
         public string Password { get; set; } = string.Empty;
         [EmailAddress]
-        public string? Email { get; set; }
+        public string Email { get; set; } = string.Empty;
         [Phone]
         public string? PhoneNumber { get; set; }
         public string? Telegram { get; set; }
@@ -24,7 +24,6 @@ namespace KGTT_Educate.Services.Account.Models
         public string FirstName { get; set; } = string.Empty;
         public string MiddleName { get; set; } = string.Empty;
         public string? AvatarLocalPath { get; set; }
-        public string? AvatarFullPath { get; set; }
         public DateTime? CreatedAt { get; set; }
     }
 }

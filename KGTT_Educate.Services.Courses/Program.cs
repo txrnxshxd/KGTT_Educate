@@ -2,6 +2,7 @@ using KGTT_Educate.Services.Courses.Data.Interfaces.Repository;
 using KGTT_Educate.Services.Courses.Data.Interfaces.UoW;
 using KGTT_Educate.Services.Courses.Data.Repository;
 using KGTT_Educate.Services.Courses.Data.UoW;
+using KGTT_Educate.Services.Courses.SyncDataServices.Grpc;
 using KGTT_Educate.Services.Courses.SyncDataServices.Http;
 using KGTT_Educate.Services.Courses.Utils;
 using Mapster;
@@ -17,13 +18,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll",
-        builder => builder.AllowAnyOrigin()
-                          .AllowAnyHeader()
-                          .AllowAnyMethod());
-});
+builder.Services.AddCors();
+builder.Services.AddGrpc();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -32,6 +28,7 @@ builder.Services.AddSwaggerGen();
 var mapsterConfig = new TypeAdapterConfig();
 builder.Services.AddSingleton(mapsterConfig);
 builder.Services.AddScoped<IMapper, ServiceMapper>();
+builder.Services.AddScoped<IGrpcAccountClient, GrpcAccountClient>();
 
 builder.Services.Configure<MongoSettings>(builder.Configuration.GetSection("MongoConnection"));
 
@@ -71,7 +68,6 @@ builder.Services.AddSingleton<IMongoDatabase>(provider =>
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddHttpClient<ICommandDataClient, HttpCommandDataClient>();
-builder.Services.AddHttpClient<IReadOnlyDataClient, HttpReadOnlyDataClient>();
 
 builder.WebHost.ConfigureKestrel(options =>
 {
@@ -94,24 +90,21 @@ builder.WebHost.ConfigureKestrel(options =>
 
 var app = builder.Build();
 
+
 // Configure the HTTP request pipeline.
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.UseCors(builder => builder.AllowAnyOrigin()
+                                  .AllowAnyHeader()
+                                  .AllowAnyMethod());
 }
 
-app.Use(async (context, next) =>
-{
-    context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
-    await next.Invoke();
-});
+app.UseHttpsRedirection();
 
 app.UseRouting();
-
-app.UseCors("AllowAll");
-
-app.UseHttpsRedirection();
 
 app.UseAuthorization();
 

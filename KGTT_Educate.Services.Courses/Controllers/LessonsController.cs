@@ -18,13 +18,11 @@ namespace KGTT_Educate.Services.Courses.Controllers
 
         private readonly IUnitOfWork _uow;
         private readonly ICommandDataClient _httpCommand;
-        private readonly IReadOnlyDataClient _httpRead;
 
-        public LessonsController(IUnitOfWork uow, ICommandDataClient httpCommand, IReadOnlyDataClient httpRead)
+        public LessonsController(IUnitOfWork uow, ICommandDataClient httpCommand)
         {
             _uow = uow;
             _httpCommand = httpCommand;
-            _httpRead = httpRead;
         }
 
         [HttpGet]
@@ -199,27 +197,27 @@ namespace KGTT_Educate.Services.Courses.Controllers
             }
         }
 
-        [HttpGet("Files/Get/{fileId}")]
-        public async Task<ActionResult> GetFile(int fileId)
-        {
-            if (fileId <= 0) return BadRequest();
+        //[HttpGet("Files/Get/{fileId}")]
+        //public async Task<ActionResult> GetFile(int fileId)
+        //{
+        //    if (fileId <= 0) return BadRequest();
 
-            LessonFile file = await _uow.LessonFiles.GetByIdAsync(fileId);
+        //    LessonFile file = await _uow.LessonFiles.GetByIdAsync(fileId);
 
-            try
-            {
-                var (fileStream, contentType) = await _httpRead.GetFile(file.LocalFilePath);
-                return File(fileStream, contentType);
-            }
-            catch (HttpRequestException ex)
-            {
-                return StatusCode((int)ex.StatusCode!, $"Ошибка сети: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
+        //    try
+        //    {
+        //        var (fileStream, contentType) = await _httpRead.GetFile(file.LocalFilePath);
+        //        return File(fileStream, contentType);
+        //    }
+        //    catch (HttpRequestException ex)
+        //    {
+        //        return StatusCode((int)ex.StatusCode!, $"Ошибка сети: {ex.Message}");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+        //}
 
         [HttpDelete("Files/{fileId}")]
         public async Task<ActionResult> DeleteFile(int fileId)

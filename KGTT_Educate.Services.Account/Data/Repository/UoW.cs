@@ -30,5 +30,10 @@ namespace KGTT_Educate.Services.Account.Data.Repository
         {
             _context.SaveChanges();
         }
+
+        public async Task SaveAsync()
+        {
+            await _context.SaveChangesAsync();
+        }
     }
 }

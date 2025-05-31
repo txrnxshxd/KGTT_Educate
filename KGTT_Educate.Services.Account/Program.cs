@@ -2,6 +2,7 @@ using KGTT_Educate.Services.Account.Data;
 using KGTT_Educate.Services.Account.Data.Repository;
 using KGTT_Educate.Services.Account.Data.Repository.Interfaces;
 using KGTT_Educate.Services.Account.SyncDataServices.Grpc;
+using KGTT_Educate.Services.Account.SyncDataServices.Http;
 using Mapster;
 using MapsterMapper;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -27,6 +28,7 @@ builder.Services.AddScoped<IUoW, UoW>();
 var mapsterConfig = new TypeAdapterConfig();
 builder.Services.AddSingleton(mapsterConfig);
 builder.Services.AddScoped<IMapper, ServiceMapper>();
+builder.Services.AddHttpClient<ICommandDataClient, HttpCommandDataClient>();
 
 builder.WebHost.ConfigureKestrel(options =>
 {
@@ -54,8 +56,10 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    app.UseCors(builder => builder.AllowAnyOrigin()
-                                  .AllowAnyHeader());
+    app.UseCors(builder => builder.SetIsOriginAllowed(origin => true)
+                                  .AllowAnyHeader()
+                                  .AllowAnyMethod()
+                                  .AllowCredentials());
 }
 
 app.UseHttpsRedirection();

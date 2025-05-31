@@ -9,5 +9,6 @@
         IUserRoleRepository UserRole { get; }
 
         void Save();
+        Task SaveAsync();
     }
 }

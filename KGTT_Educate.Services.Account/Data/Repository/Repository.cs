@@ -18,7 +18,7 @@ namespace KGTT_Educate.Services.Account.Data.Repository
 
         public void Add(T entity)
         {
-            dbSet.AddAsync(entity);
+            dbSet.Add(entity);
         }
 
         public void Delete(T entity)

@@ -1,11 +1,13 @@
 ﻿using KGTT_Educate.Services.Account.Data.Repository.Interfaces;
 using KGTT_Educate.Services.Account.Models;
 using KGTT_Educate.Services.Account.Models.Dto;
+using KGTT_Educate.Services.Account.SyncDataServices.Http;
 using KGTT_Educate.Services.Account.Utils;
 using Mapster;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using System.Text.Json;
 
 namespace KGTT_Educate.Services.Account.Controllers
 {
@@ -14,10 +16,12 @@ namespace KGTT_Educate.Services.Account.Controllers
     public class AccountController : ControllerBase
     {
         private readonly IUoW _uow;
+        private readonly ICommandDataClient _httpCommand;
 
-        public AccountController(IUoW uow)
+        public AccountController(IUoW uow, ICommandDataClient httpCommand)
         {
             _uow = uow;
+            _httpCommand = httpCommand;
         }
 
         [HttpGet]
@@ -48,20 +52,53 @@ namespace KGTT_Educate.Services.Account.Controllers
             return Ok(userGroup.Adapt<IEnumerable<Models.Dto.UserGroupDTO>>());
         }
 
-        [HttpPost]
-        public IActionResult Create(User user)
+        [HttpPost("Create")]
+        public async Task<ActionResult> Create([FromForm] UserRequest userRequest)
         {
-            if (user == null) return BadRequest();
+            if (userRequest == null) return BadRequest();
 
             Hasher hasher = new();
 
-            user.Password = hasher.HashSHA512(user.Password);
+            userRequest.Password = hasher.HashSHA512(userRequest.Password);
+
+            User user = userRequest.Adapt<User>();
             user.CreatedAt = DateTime.UtcNow.Date;
+
+            if (userRequest.FormFile != null)
+            {
+                try
+                {
+                    Console.WriteLine("--> Запрос к FilesAPI");
+                    using HttpResponseMessage response = await _httpCommand.SendFile(userRequest.FormFile, "Accounts");
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        var error = await response.Content.ReadAsStringAsync();
+                        return StatusCode((int)response.StatusCode, $"Ошибка загрузки файла: {error}");
+                    }
+
+                    FilesApiResponse result = await response.Content.ReadFromJsonAsync<FilesApiResponse>();
+
+                    user.AvatarLocalPath = result.LocalFilePath;
+                }
+                catch (HttpRequestException ex)
+                {
+                    Console.WriteLine($"Ошибка сети: {ex.Message}");
+                }
+                catch (JsonException ex)
+                {
+                    Console.WriteLine($"Ошибка JSON: {ex.Message}"); ;
+                }
+            }
+            else
+            {
+                user.AvatarLocalPath = null;
+            }
 
             try
             {
                 _uow.Users.Add(user);
-                _uow.Save();
+                await _uow.SaveAsync();
             }
             catch (DbUpdateException ex)
             {
@@ -76,13 +113,16 @@ namespace KGTT_Educate.Services.Account.Controllers
                             return BadRequest("Email уже используется");
                         case "IX_Users_Telegram":
                             return BadRequest("Telegram уже привязан");
+                        case "IX_Users_PhoneNumber":
+                            return BadRequest("Номер уже существует");
                         default:
                             return BadRequest("Дубликат данных");
                     }
                 }
             }
 
-            return Ok(user.Adapt<UserDTO>());
+            return Ok(user.Adapt<Models.Dto.UserDTO>());
+
         }
 
         [HttpPut]

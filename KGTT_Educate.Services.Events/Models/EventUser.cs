@@ -9,8 +9,6 @@ namespace KGTT_Educate.Services.Events.Models
         [Key]
         public Guid Id { get; set; }
         public Guid UserId { get; set; }
-        [NotMapped]
-        public User User { get; set; }
         public Guid EventId { get; set; }
         [ForeignKey(nameof(EventId))]
         public Event Event { get; set; }
