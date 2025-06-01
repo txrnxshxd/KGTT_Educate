@@ -361,3 +361,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/KGTT_Educate.Services.FilesAPI/wwwroot/Courses/Media/210f7274-b852-4518-b53f-f7b342c11384.MP4
+/KGTT_Educate.Services.FilesAPI/wwwroot/Courses/Media/bad63906-a631-44bb-903e-8ec27c773991.png
+/KGTT_Educate.Services.FilesAPI/wwwroot/Courses/Media/e88200c9-674b-4f0f-b967-4e2a7f48bdaf.png
