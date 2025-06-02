@@ -306,7 +306,10 @@ namespace KGTT_Educate.Services.Courses.Controllers
 
             IEnumerable<CourseFile> courseFiles = await _uow.CourseFiles.GetByCourseIdAsync(course.Id);
 
-            if (courseFiles.Count() >= 5) return BadRequest(new {message = "Вы не можете загрузить больше 5 файлов на курс"});
+            if (courseFiles.Where(x => x.IsPinned == isPinned).Count() >= 5)
+            {
+                return BadRequest(new { message = $"Вы не можете загрузить больше 5 {(isPinned ? "Закрепленных файлов" : "Медиафайлов")} к курсу"});
+            }
 
             CourseFile lastFile = await _uow.CourseFiles.GetLastAsync();
 

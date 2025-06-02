@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using System.IO;
+using System.Xml.Linq;
 
 namespace KGTT_Educate.Services.FilesAPI.Controllers
 {
@@ -19,13 +20,15 @@ namespace KGTT_Educate.Services.FilesAPI.Controllers
         }
 
         [HttpGet("Get/{path}")]
-        public IActionResult GetFile(string path)
+        public IActionResult GetFile(string path, string? downloadNameRequest)
         {
             if (string.IsNullOrEmpty(path)) return BadRequest();
 
             string wwwrootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", path);
 
-            if (_contentTypeProvider.TryGetContentType(wwwrootPath, out var contentType))
+            string downloadName = !string.IsNullOrEmpty(downloadNameRequest) ? downloadNameRequest : path;
+
+            if (!_contentTypeProvider.TryGetContentType(wwwrootPath, out var contentType))
             {
                 contentType = "application/octet-stream";
             }
@@ -33,7 +36,7 @@ namespace KGTT_Educate.Services.FilesAPI.Controllers
             try
             {
                 Console.WriteLine("--> Вызов GetFile");
-                return PhysicalFile(wwwrootPath, contentType, enableRangeProcessing: true);
+                return PhysicalFile(wwwrootPath, contentType, fileDownloadName: Uri.EscapeDataString(downloadName), enableRangeProcessing: true);
             }
             catch (FileNotFoundException ex)
             {
@@ -53,7 +56,7 @@ namespace KGTT_Educate.Services.FilesAPI.Controllers
 
                 string wwwrootPath = Path.GetRelativePath(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), filePath);
 
-                return Ok(new { FileName = fileName, OriginalName = file.FileName, LocalFilePath = wwwrootPath });
+                return Ok(new { FileName = fileName, OriginalName = file.FileName, LocalFilePath = @$"{wwwrootPath}" });
             }
             catch (Exception ex)
             {

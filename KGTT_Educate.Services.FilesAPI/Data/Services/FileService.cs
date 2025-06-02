@@ -21,11 +21,11 @@ namespace KGTT_Educate.Services.FilesAPI.Data.Services
                 throw new Exception($"Размер файла не может быть более {allowedFileLength / 1024 / 1024} мб");
             }
 
-            // Имя файла
-            string fileName = $"{Guid.NewGuid().ToString()}{Path.GetExtension(file.FileName)}";
-
             // Расширение файла
             string fileExt = Path.GetExtension(file.FileName).ToLowerInvariant();
+
+            // Имя файла
+            string fileName = $"{Guid.NewGuid().ToString()}{fileExt}";
 
             // Получаем путь к директории, указанной в appsettings.json
             var directorySection = _configuration.GetSection($"FileStorage:{section}:RootPath");
