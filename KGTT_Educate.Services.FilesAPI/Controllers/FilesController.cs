@@ -30,7 +30,16 @@ namespace KGTT_Educate.Services.FilesAPI.Controllers
                 contentType = "application/octet-stream";
             }
 
-            return PhysicalFile(wwwrootPath, contentType, enableRangeProcessing: true);
+            try
+            {
+                Console.WriteLine("--> Вызов GetFile");
+                return PhysicalFile(wwwrootPath, contentType, enableRangeProcessing: true);
+            }
+            catch (FileNotFoundException ex)
+            {
+                Console.WriteLine($"--> Файл не найден! {ex}");
+                return NotFound("Файл не найден!");
+            }
         }
 
         [HttpPost("Upload")]
