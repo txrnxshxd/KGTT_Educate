@@ -36,5 +36,23 @@ namespace KGTT_Educate.Services.Account.Data.Repository
 
             return query.ToList();
         }
+
+        public async Task<IEnumerable<UserRole>> GetManyAsync(Expression<Func<UserRole, bool>> predicate, string? includeProperties = null)
+        {
+            IQueryable<UserRole> query = dbSet;
+
+            query = query.Where(predicate);
+
+            if (!string.IsNullOrEmpty(includeProperties))
+            {
+                foreach (var property in includeProperties
+                    .Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(property);
+                }
+            }
+
+            return await query.ToListAsync();
+        }
     }
 }

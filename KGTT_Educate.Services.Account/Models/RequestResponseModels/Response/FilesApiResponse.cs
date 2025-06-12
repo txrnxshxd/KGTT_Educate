@@ -1,4 +1,4 @@
-﻿namespace KGTT_Educate.Services.Account.Models.Dto
+﻿namespace KGTT_Educate.Services.Account.Models.RequestResponseModels.Response
 {
     public class FilesApiResponse
     {

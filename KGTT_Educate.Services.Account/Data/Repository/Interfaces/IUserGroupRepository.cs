@@ -6,6 +6,7 @@ namespace KGTT_Educate.Services.Account.Data.Repository.Interfaces
     public interface IUserGroupRepository : IRepository<UserGroup>
     {
         IEnumerable<UserGroup> GetMany(Expression<Func<UserGroup, bool>> predicate, string? includeProperties = null);
+        Task<IEnumerable<UserGroup>> GetManyAsync(Expression<Func<UserGroup, bool>> predicate, string? includeProperties = null);
         public void Update(UserGroup userGroup);
         
     }

@@ -49,6 +49,24 @@ namespace KGTT_Educate.Services.Account.Data.Repository
             return query.FirstOrDefault();
         }
 
+        public async Task<T> GetAsync(Expression<Func<T, bool>> predicate, string? includeProperties = null)
+        {
+            IQueryable<T> query = dbSet;
+
+            query = query.Where(predicate);
+
+            if (!string.IsNullOrEmpty(includeProperties))
+            {
+                foreach (var property in includeProperties
+                    .Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(property);
+                }
+            }
+
+            return await query.FirstOrDefaultAsync();
+        }
+
         public IEnumerable<T> GetAll(string? includeProperties = null)
         {
             IQueryable<T> query = dbSet;

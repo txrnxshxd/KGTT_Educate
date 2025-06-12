@@ -1,9 +1,11 @@
 ﻿using KGTT_Educate.Services.Account.Data.Repository.Interfaces;
 using KGTT_Educate.Services.Account.Models;
-using KGTT_Educate.Services.Account.Models.Dto;
+using KGTT_Educate.Services.Account.Models.RequestResponseModels.Request;
+using KGTT_Educate.Services.Account.Models.RequestResponseModels.Response;
 using KGTT_Educate.Services.Account.SyncDataServices.Http;
 using KGTT_Educate.Services.Account.Utils;
 using Mapster;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -25,6 +27,7 @@ namespace KGTT_Educate.Services.Account.Controllers
         }
 
         [HttpGet]
+        [Authorize(Policy = "Authenticated")]
         public IActionResult GetAll()
         {
             IEnumerable<User> users = _uow.Users.GetAll();

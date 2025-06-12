@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
-namespace KGTT_Educate.Services.Account.Models.Dto
+namespace KGTT_Educate.Services.Account.Models.RequestResponseModels.Request
 {
     [Index(nameof(Login), IsUnique = true)]
     [Index(nameof(Email), IsUnique = true)]
