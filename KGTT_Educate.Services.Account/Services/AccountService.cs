@@ -34,7 +34,7 @@ namespace KGTT_Educate.Services.Account.Services
             return user.Adapt<Models.Dto.UserDTO>();
         }
 
-        public async Task<Models.Dto.UserJwtDTO> LoginAsync(string username, string password)
+        public async Task<UserJwtDTO> LoginAsync(string username, string password)
         {
             // Поиск пользователя
             User user = await _uow.Users.GetByUserNameAsync(username);
@@ -67,19 +67,7 @@ namespace KGTT_Educate.Services.Account.Services
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.Login),
-                new Claim(ClaimTypes.Email, user.Email),
             };
-
-            if (!string.IsNullOrEmpty(user.Telegram))
-            {
-                claims.Add(new Claim("telegram", user.Telegram));
-            }
-
-            if (!string.IsNullOrEmpty(user.PhoneNumber))
-            {
-                claims.Add(new Claim("phoneNumber", user.PhoneNumber));
-            }
 
             // Добавление ролей пользователя в claims
             if (roles.Any())
@@ -90,21 +78,27 @@ namespace KGTT_Educate.Services.Account.Services
                 }
             }
 
+            if (userGroups.Any())
+            {
+                foreach (var group in userGroups)
+                {
+                    claims.Add(new Claim("group", group.Group.Id.ToString()));
+                    claims.Add(new Claim("groupName", group.Group.Name));
+                }
+            }
+
             // Генерация токенов
             var tokenPair = await _jwtService.GenerateTokenPairAsync(user.Id.ToString(), claims);
 
             return new UserJwtDTO
             {
                 Id = user.Id,
-                Login = user.Login,
-                Email = user.Email,
-                PhoneNumber = user.PhoneNumber,
-                Telegram = user.Telegram,
-                Groups = userGroups.Select(ug => ug.Group.Name).ToList(),
-                AccessToken = tokenPair.AccessToken,
-                RefreshToken = tokenPair.RefreshToken,
+                Groups = userGroups.Select(ug => ug.Group.Id.ToString()).ToList(),
+                GroupNames = userGroups.Select(ug => ug.Group.Name).ToList(),
                 Roles = roles.Select(x => x.Role.Name).ToList(),
-                AccessTokenExpiration = _jwtService.GetAccessTokenExpiration()
+                AccessToken = tokenPair.AccessToken,
+                AccessTokenExpiration = _jwtService.GetAccessTokenExpiration(),
+                RefreshToken = tokenPair.RefreshToken
             };
         }
 
@@ -126,19 +120,17 @@ namespace KGTT_Educate.Services.Account.Services
             if (user == null)
                 throw new SecurityTokenException("User not found");
 
+            // Инвалидация старого refresh токена
+            await _jwtService.RevokeRefreshToken(refreshToken);
+
             // Получение claims пользователя
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.Login),
-                new Claim(ClaimTypes.Email, user.Email),
             };
 
             // Генерация новой пары токенов
             var newTokenPair = await _jwtService.GenerateTokenPairAsync(userId, claims);
-
-            // Инвалидация старого refresh токена
-            await _jwtService.RevokeRefreshToken(refreshToken);
 
             return newTokenPair;
         }

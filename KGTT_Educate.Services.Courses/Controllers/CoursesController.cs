@@ -4,6 +4,7 @@ using KGTT_Educate.Services.Courses.Models.Dto;
 using KGTT_Educate.Services.Courses.SyncDataServices.Grpc;
 using KGTT_Educate.Services.Courses.SyncDataServices.Http;
 using Mapster;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -29,8 +30,9 @@ namespace KGTT_Educate.Services.Courses.Controllers
             _configuration = configuration;
         }
 
-
+        
         [HttpGet]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<ActionResult<List<Course>>> GetAll()
         {
             // ПОЛУЧАЕМ ВСЕ КУРСЫ
@@ -43,6 +45,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
 
 
         [HttpGet("{id}")]
+        [Authorize(Policy = "Authenticated")]
         public async Task<ActionResult<Course>> GetById(int id)
         {
             if (id <= 0) return NotFound();
@@ -55,8 +58,9 @@ namespace KGTT_Educate.Services.Courses.Controllers
         }
 
 
-        //TODO
+        
         [HttpGet("Group/{groupId}")]
+        [Authorize(Policy = "Authenticated")]
         public async Task<ActionResult<Course>> GetByGroupId(Guid groupId)
         {
             var grpcClient = new GrpcAccountClient(_configuration);
@@ -73,6 +77,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
         }
 
         [HttpPost("Group")]
+        [Authorize(Policy = "AdminOrTeacher")]
         public async Task<ActionResult> AddGroupToCourse(int courseId, Guid groupId)
         {
             Course course = await _uow.Courses.GetByIdAsync(courseId);
@@ -100,6 +105,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
         }
 
         [HttpGet("Files/{courseId}")]
+        [Authorize(Policy = "Authenticated")]
         public async Task<ActionResult> GetFilesByCourseId(int courseId)
         {
             IEnumerable<CourseFile> files = await _uow.CourseFiles.GetByCourseIdAsync(courseId);
@@ -110,6 +116,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "AdminOrTeacher")]
         public async Task<ActionResult<CourseRequest>> Create([FromForm] CourseRequest courseRequest)
         {
             if (courseRequest == null) return BadRequest();
@@ -155,6 +162,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = "AdminOrTeacher")]
         public async Task<ActionResult> Update(int id, CourseRequest courseRequest)
         {
             if (courseRequest == null || id == 0) return BadRequest();
@@ -224,6 +232,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
         }
 
         [HttpDelete]
+        [Authorize(Policy = "AdminOrTeacher")]
         public async Task<ActionResult> Delete(int id)
         {
             if (id <= 0) return BadRequest();
@@ -298,6 +307,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
 
 
         [HttpPost("Files/{courseId}")]
+        [Authorize(Policy = "AdminOrTeacher")]
         public async Task<ActionResult> UploadFile(int courseId, IFormFile file, bool isPinned = false)
         {
             Course course = await _uow.Courses.GetByIdAsync(courseId);
@@ -353,6 +363,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
         }
 
         [HttpDelete("Files/{fileId}")]
+        [Authorize(Policy = "AdminOrTeacher")]
         public async Task<ActionResult> DeleteFile(int fileId)
         {
             CourseFile file = await _uow.CourseFiles.GetByIdAsync(fileId);

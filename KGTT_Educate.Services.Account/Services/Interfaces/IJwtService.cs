@@ -11,6 +11,5 @@ namespace KGTT_Educate.Services.Account.Services.Interfaces
         Task<RefreshTokenValidationResult> ValidateRefreshToken(string refreshToken);
         Task RevokeRefreshToken(string refreshToken);
         Task RevokeAllRefreshTokensForUser(string userId);
-        ClaimsPrincipal GetPrincipalFromExpiredToken(string token);
     }
 }

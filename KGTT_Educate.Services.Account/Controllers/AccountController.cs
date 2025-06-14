@@ -6,6 +6,7 @@ using KGTT_Educate.Services.Account.SyncDataServices.Http;
 using KGTT_Educate.Services.Account.Utils;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -42,7 +43,7 @@ namespace KGTT_Educate.Services.Account.Controllers
 
             if (user == null) return NotFound();
 
-            return Ok(user.Adapt<UserDTO>());
+            return Ok(user.Adapt<Models.Dto.UserDTO>());
         }
 
         [HttpGet("Group/{groupId}")]
@@ -55,79 +56,6 @@ namespace KGTT_Educate.Services.Account.Controllers
             return Ok(userGroup.Adapt<IEnumerable<Models.Dto.UserGroupDTO>>());
         }
 
-        [HttpPost("Create")]
-        public async Task<ActionResult> Create([FromForm] UserRequest userRequest)
-        {
-            if (userRequest == null) return BadRequest();
-
-            Hasher hasher = new();
-
-            userRequest.Password = hasher.HashSHA512(userRequest.Password);
-
-            User user = userRequest.Adapt<User>();
-            user.CreatedAt = DateTime.UtcNow.Date;
-
-            if (userRequest.FormFile != null)
-            {
-                try
-                {
-                    Console.WriteLine("--> Запрос к FilesAPI");
-                    using HttpResponseMessage response = await _httpCommand.SendFile(userRequest.FormFile, "Accounts");
-
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        var error = await response.Content.ReadAsStringAsync();
-                        return StatusCode((int)response.StatusCode, $"Ошибка загрузки файла: {error}");
-                    }
-
-                    FilesApiResponse result = await response.Content.ReadFromJsonAsync<FilesApiResponse>();
-
-                    user.AvatarLocalPath = result.LocalFilePath;
-                }
-                catch (HttpRequestException ex)
-                {
-                    Console.WriteLine($"Ошибка сети: {ex.Message}");
-                }
-                catch (JsonException ex)
-                {
-                    Console.WriteLine($"Ошибка JSON: {ex.Message}"); ;
-                }
-            }
-            else
-            {
-                user.AvatarLocalPath = null;
-            }
-
-            try
-            {
-                _uow.Users.Add(user);
-                await _uow.SaveAsync();
-            }
-            catch (DbUpdateException ex)
-            {
-                // Ошибка дубликата
-                if (ex.InnerException is PostgresException pgEx && pgEx.SqlState == "23505")
-                {
-                    switch (pgEx.ConstraintName)
-                    {
-                        case "IX_Users_Login":
-                            return BadRequest("Логин занят");
-                        case "IX_Users_Email":
-                            return BadRequest("Email уже используется");
-                        case "IX_Users_Telegram":
-                            return BadRequest("Telegram уже привязан");
-                        case "IX_Users_PhoneNumber":
-                            return BadRequest("Номер уже существует");
-                        default:
-                            return BadRequest("Дубликат данных");
-                    }
-                }
-            }
-
-            return Ok(user.Adapt<Models.Dto.UserDTO>());
-
-        }
-
         [HttpPut]
         public IActionResult Update([FromBody] User user)
         {
@@ -135,6 +63,7 @@ namespace KGTT_Educate.Services.Account.Controllers
 
             try
             {
+                var passwordHash = new PasswordHasher<User>().HashPassword(user, user.Password);
                 _uow.Users.Update(user);
                 _uow.Save();
             }

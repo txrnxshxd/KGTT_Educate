@@ -29,17 +29,7 @@ builder.WebHost.ConfigureKestrel(options =>
     options.ListenAnyIP(10005, listenOptions =>
     {
         listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-        listenOptions.UseHttps(httpsOptions =>
-        {
-            httpsOptions.ServerCertificate = new X509Certificate2(
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                ".aspnet",
-                "https",
-                "kgttedu.pfx"
-                ),
-                "txrnxshxd!"
-            );
-        });
+        listenOptions.UseHttps();
     });
 });
 

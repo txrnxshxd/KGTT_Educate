@@ -6,6 +6,7 @@ using KGTT_Educate.Services.Account.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 using System.Security.Authentication;
@@ -18,10 +19,12 @@ namespace KGTT_Educate.Services.Account.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAccountService _accountService;
+        private readonly IOptions<JwtSettings> _configuration;
 
-        public AuthController(IAccountService accountService)
+        public AuthController(IAccountService accountService, IOptions<JwtSettings> configuration)
         {
             _accountService = accountService;
+            _configuration = configuration;
         }
 
         [HttpPost("Register")]
@@ -77,6 +80,8 @@ namespace KGTT_Educate.Services.Account.Controllers
             try
             {
                 var result = await _accountService.LoginAsync(request.Login, request.Password);
+                SetRefreshTokenCookie(result.RefreshToken);
+
                 return Ok(result);
             }
             catch (AuthenticationException ex)
@@ -91,12 +96,15 @@ namespace KGTT_Educate.Services.Account.Controllers
 
         [HttpPost("RefreshToken")]
         [AllowAnonymous]
-        public async Task<ActionResult<RefreshTokenResponse>> RefreshToken(
-        [FromBody] RefreshTokenRequest request)
+        public async Task<ActionResult<RefreshTokenResponse>> RefreshToken()
         {
+            var refreshToken = Request.Cookies["refreshToken"];
+
+            if (string.IsNullOrEmpty(refreshToken)) return Unauthorized("Не найден Refresh Token");
+
             try
             {
-                var tokenPair = await _accountService.RefreshTokenAsync(request.RefreshToken);
+                var tokenPair = await _accountService.RefreshTokenAsync(refreshToken);
 
                 // Обновляем refresh token в cookie
                 SetRefreshTokenCookie(tokenPair.RefreshToken);
@@ -114,10 +122,10 @@ namespace KGTT_Educate.Services.Account.Controllers
         }
 
         [HttpPost("Logout")]
-        [Authorize]
+        [Authorize(Policy = "Authenticated")]
         public async Task<IActionResult> Logout()
         {
-            var refreshToken = Request.Cookies["refreshToken"];
+            string refreshToken = Request.Cookies["refreshToken"];
 
             if (!string.IsNullOrEmpty(refreshToken))
             {
@@ -168,7 +176,7 @@ namespace KGTT_Educate.Services.Account.Controllers
                 HttpOnly = true,
                 Secure = true, // Только HTTPS
                 SameSite = SameSiteMode.Strict,
-                Expires = DateTime.UtcNow.AddDays(7),
+                Expires = DateTime.UtcNow.AddDays(_configuration.Value.RefreshTokenExpirationDays),
                 Path = "/"
             });
         }

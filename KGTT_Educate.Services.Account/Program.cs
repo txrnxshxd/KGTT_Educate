@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using StackExchange.Redis;
@@ -74,12 +75,12 @@ builder.Services.AddHttpClient<ICommandDataClient, HttpCommandDataClient>();
 
 // Конфигурация JWT
 var jwtSettings = builder.Configuration.GetSection(nameof(JwtSettings)).Get<JwtSettings>();
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(nameof(JwtSettings)));
 
 if (jwtSettings == null || jwtSettings.AccessTokenExpirationMinutes <= 0)
 {
     throw new ApplicationException("Invalid JWT configuration");
 }
-builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(nameof(JwtSettings)));
 builder.Services.AddSingleton<JwtService>();
 
 builder.Services.AddAuthentication(options =>

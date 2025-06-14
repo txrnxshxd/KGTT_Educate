@@ -3,6 +3,7 @@ using KGTT_Educate.Services.Courses.Models;
 using KGTT_Educate.Services.Courses.Models.Dto;
 using KGTT_Educate.Services.Courses.SyncDataServices.Http;
 using KGTT_Educate.Services.Courses.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
@@ -26,6 +27,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<Lesson>>> GetAll()
         {
             IEnumerable<Lesson> lessons = await _uow.Lessons.GetAllAsync();
@@ -36,6 +38,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<ActionResult<Lesson>> GetById(int id)
         {
             if (id <= 0) return NotFound();
@@ -46,6 +49,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
         }
 
         [HttpGet("Course/{courseId}")]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<Lesson>>> GetByCourseId(int courseId)
         {
             if (courseId <= 0) return BadRequest();
@@ -62,6 +66,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
         }
 
         [HttpGet("Files/{lessonId}")]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<LessonFile>>> GetLessonFiles(int lessonId)
         {
             IEnumerable<LessonFile> files = await _uow.LessonFiles.GetByLessonIdAsync(lessonId);
@@ -72,6 +77,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin, Teacher")]
         public async Task<ActionResult<Lesson>> Create([FromBody] Lesson lesson)
         {
             if (lesson == null) return BadRequest();
@@ -90,6 +96,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin, Teacher")]
         public async Task<ActionResult> Update(int id, Lesson lesson)
         {
             if (id != lesson.Id) return BadRequest();
@@ -108,6 +115,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin, Teacher")]
         public async Task<ActionResult> Delete(int id)
         {
             if (id <= 0) return BadRequest();
@@ -148,6 +156,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
         }
 
         [HttpPost("Files/{lessonId}")]
+        [Authorize(Roles = "Admin, Teacher")]
         public async Task<ActionResult> UploadFile(int lessonId, IFormFile file, bool isPinned = false)
         {
             Lesson lesson = await _uow.Lessons.GetByIdAsync(lessonId);
@@ -223,6 +232,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
         //}
 
         [HttpDelete("Files/{fileId}")]
+        [Authorize(Roles = "Admin, Teacher")]
         public async Task<ActionResult> DeleteFile(int fileId)
         {
             LessonFile file = await _uow.LessonFiles.GetByIdAsync(fileId);

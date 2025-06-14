@@ -39,8 +39,9 @@ namespace KGTT_Educate.Services.Account.Services
                 Expires = DateTime.UtcNow.AddMinutes(_settings.AccessTokenExpirationMinutes),
                 Issuer = _settings.Issuer,
                 Audience = _settings.Audience,
-                SigningCredentials = creds
-                // Убрано явное добавление Claims (дублирование с Subject)
+                SigningCredentials = creds,
+                IssuedAt = DateTime.UtcNow,
+                NotBefore = DateTime.UtcNow
             };
 
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -49,7 +50,7 @@ namespace KGTT_Educate.Services.Account.Services
         }
 
         // Генерация и сохранение refresh-токена
-        public async Task<string> GenerateAndStoreRefreshToken(string userId, string deviceFingerprint = null)
+        public async Task<string> GenerateAndStoreRefreshToken(string userId)
         {
             // Генерация криптографически безопасного токена
             var randomNumber = new byte[32];
@@ -64,12 +65,11 @@ namespace KGTT_Educate.Services.Account.Services
             var tokenData = new RefreshTokenData
             {
                 UserId = userId,
-                Expires = DateTime.UtcNow.AddDays(_settings.RefreshTokenExpirationDays),
-                DeviceFingerprint = deviceFingerprint
+                Expires = DateTime.UtcNow.AddDays(_settings.RefreshTokenExpirationDays)
             };
 
             // Сериализуем данные в JSON
-            var tokenJson = System.Text.Json.JsonSerializer.Serialize(tokenData);
+            var tokenJson = JsonSerializer.Serialize(tokenData);
 
             // Сохраняем в Redis с установкой времени жизни
             await _redisDb.StringSetAsync(
@@ -158,41 +158,13 @@ namespace KGTT_Educate.Services.Account.Services
                 var value = await _redisDb.StringGetAsync(key);
                 if (!value.IsNullOrEmpty)
                 {
-                    var tokenData = System.Text.Json.JsonSerializer.Deserialize<RefreshTokenData>(value);
+                    var tokenData = JsonSerializer.Deserialize<RefreshTokenData>(value);
                     if (tokenData != null && tokenData.UserId == userId)
                     {
                         await _redisDb.KeyDeleteAsync(key);
                     }
                 }
             }
-        }
-
-        public ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
-        {
-            var tokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateAudience = true,
-                ValidateIssuer = true,
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.SecretKey)),
-                ValidIssuer = _settings.Issuer,
-                ValidAudience = _settings.Audience,
-                ValidateLifetime = false // Игнорируем срок действия
-            };
-
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out var securityToken);
-
-            // Проверка алгоритма
-            if (securityToken is not JwtSecurityToken jwtSecurityToken ||
-                !jwtSecurityToken.Header.Alg.Equals(
-                    SecurityAlgorithms.HmacSha256,
-                    StringComparison.InvariantCultureIgnoreCase))
-            {
-                throw new SecurityTokenException("Invalid token algorithm");
-            }
-
-            return principal;
         }
     }
 }
