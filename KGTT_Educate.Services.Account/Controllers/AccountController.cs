@@ -3,7 +3,6 @@ using KGTT_Educate.Services.Account.Models;
 using KGTT_Educate.Services.Account.Models.RequestResponseModels.Request;
 using KGTT_Educate.Services.Account.Models.RequestResponseModels.Response;
 using KGTT_Educate.Services.Account.SyncDataServices.Http;
-using KGTT_Educate.Services.Account.Utils;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -61,10 +60,27 @@ namespace KGTT_Educate.Services.Account.Controllers
         {
             if (user == null) return BadRequest();
 
+            User existingUser = _uow.Users.Get(x => x.Id == user.Id);
+
+            if (existingUser == null) return NotFound();
+
             try
             {
-                var passwordHash = new PasswordHasher<User>().HashPassword(user, user.Password);
-                _uow.Users.Update(user);
+                existingUser.Login = user.Login;
+                existingUser.Email = user.Email;
+                existingUser.PhoneNumber = user.PhoneNumber;
+                existingUser.Telegram = user.Telegram;
+                existingUser.LastName = user.LastName;
+                existingUser.FirstName = user.FirstName;
+                existingUser.MiddleName = user.MiddleName;
+
+                if (!string.IsNullOrEmpty(user.Password))
+                {
+                    if (user.Password.Length < 8) return BadRequest("Пароль должен содержать минимум 8 символов");
+                    existingUser.Password = new PasswordHasher<User>().HashPassword(user, user.Password);
+                }
+
+                _uow.Users.Update(existingUser);
                 _uow.Save();
             }
             catch (DbUpdateException ex)
@@ -86,12 +102,12 @@ namespace KGTT_Educate.Services.Account.Controllers
                 }
             }
 
-            return Ok(user.Adapt<UserDTO>());
+            return Ok(user.Adapt<Models.Dto.UserDTO>());
         }
 
         [HttpPut("Avatar/{userId}")]
         [Consumes("multipart/form-data")]
-        public IActionResult UpdateAvatar(IFormFile avatar, Guid userId)
+        public async Task<ActionResult> UpdateAvatar(IFormFile avatar, Guid userId)
         {
             if (avatar == null || userId == Guid.Empty) return BadRequest();
 
@@ -99,21 +115,76 @@ namespace KGTT_Educate.Services.Account.Controllers
 
             if (user == null) return NotFound();
 
-            // Запрос к FilesAPI, после записываем пути к файлу в user
+            if (avatar != null)
+            {
+                try
+                {
+                    Console.WriteLine("--> Запрос к FilesAPI");
+                    using HttpResponseMessage response = await _httpCommand.SendFile(avatar, "Accounts");
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        var error = await response.Content.ReadAsStringAsync();
+                        Console.WriteLine($"---> Ошибка загрузки файла: {error}");
+                    }
+
+                    FilesApiResponse fileResult = await response.Content.ReadFromJsonAsync<FilesApiResponse>();
+
+                    user.AvatarLocalPath = fileResult.LocalFilePath;
+                }
+                catch (HttpRequestException ex)
+                {
+                    Console.WriteLine($"Ошибка сети: {ex.Message}");
+                }
+                catch (JsonException ex)
+                {
+                    Console.WriteLine($"Ошибка JSON: {ex.Message}"); ;
+                }
+            }
+            else
+            {
+                user.AvatarLocalPath = null;
+            }
+
+            _uow.Users.Update(user);
+            await _uow.SaveAsync();
 
             return Ok(user.Adapt<Models.Dto.UserDTO>());
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(Guid id)
+        public async Task<ActionResult> Delete(Guid id)
         {
             User user = _uow.Users.Get(x => x.Id == id);
 
             if (user == null) return NotFound();
 
+            if (user.AvatarLocalPath != null)
+            {
+                try
+                {
+                    Console.WriteLine("--> Запрос к FilesAPI");
+                    using HttpResponseMessage response = await _httpCommand.DeleteFile(user.AvatarLocalPath);
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        var error = await response.Content.ReadAsStringAsync();
+                        Console.WriteLine($"---> Ошибка удаления файла: {error}");
+                    }
+                }
+                catch (HttpRequestException ex)
+                {
+                    Console.WriteLine($"Ошибка сети: {ex.Message}");
+                }
+                catch (JsonException ex)
+                {
+                    Console.WriteLine($"Ошибка JSON: {ex.Message}"); ;
+                }
+            }
+
             _uow.Users.Delete(user);
 
-            _uow.Save();
+            await _uow.SaveAsync();
 
             return Ok(user.Adapt<Models.Dto.UserDTO>());
         }

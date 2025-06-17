@@ -32,9 +32,19 @@ namespace KGTT_Educate.Services.Account.Controllers
         {
             if (group == null) return BadRequest();
 
-            group.Id = Guid.NewGuid();
-
             _uow.Groups.Add(group);
+
+            _uow.Save();
+
+            return Ok(group.Adapt<GroupDTO>());
+        }
+
+        [HttpPut]
+        public IActionResult Update(Group group)
+        {
+            if (group == null) return BadRequest();
+
+            _uow.Groups.Update(group);
 
             _uow.Save();
 

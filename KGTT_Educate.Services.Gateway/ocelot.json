@@ -76,6 +76,18 @@
       "UpstreamHttpMethod": [ "POST" ]
     },
     {
+      "DownstreamPathTemplate": "/api/Auth/RegisterAndLogin",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "192.168.0.37",
+          "Port": 10004
+        }
+      ],
+      "UpstreamPathTemplate": "/auth/registerAndLogin",
+      "UpstreamHttpMethod": [ "POST" ]
+    },
+    {
       "DownstreamPathTemplate": "/api/Auth/Login",
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
@@ -144,7 +156,7 @@
         }
       ],
       "UpstreamPathTemplate": "/groups",
-      "UpstreamHttpMethod": [ "GET", "POST" ],
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer"
       }
@@ -268,6 +280,21 @@
       ],
       "UpstreamPathTemplate": "/courses",
       "UpstreamHttpMethod": [ "GET", "POST", "DELETE" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/Courses/GetAllWithGroups",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "192.168.0.37",
+          "Port": 10001
+        }
+      ],
+      "UpstreamPathTemplate": "/coursesWithGroups",
+      "UpstreamHttpMethod": [ "GET" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer"
       }
@@ -436,7 +463,7 @@
         }
       ],
       "UpstreamPathTemplate": "/events",
-      "UpstreamHttpMethod": [ "POST" ],
+      "UpstreamHttpMethod": [ "POST", "PUT" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer"
       }
@@ -551,10 +578,7 @@
       ],
       "UpstreamPathTemplate": "/files/upload",
       "UpstreamHttpMethod": [ "POST" ],
-      "DangerousAcceptAnyServerCertificateValidator": true,
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "Bearer"
-      }
+      "DangerousAcceptAnyServerCertificateValidator": true
     },
     {
       "DownstreamPathTemplate": "/api/Files/Delete/{path}",
@@ -567,10 +591,7 @@
       ],
       "UpstreamPathTemplate": "/files/delete/{path}",
       "UpstreamHttpMethod": [ "DELETE" ],
-      "DangerousAcceptAnyServerCertificateValidator": true,
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "Bearer"
-      }
+      "DangerousAcceptAnyServerCertificateValidator": true
     }
   ],
 

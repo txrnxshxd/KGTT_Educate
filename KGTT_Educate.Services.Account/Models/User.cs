@@ -13,7 +13,6 @@ namespace KGTT_Educate.Services.Account.Models
         public Guid Id { get; set; }
         [Required]
         public string Login { get; set; } = string.Empty;
-        [Required]
         public string Password { get; set; } = string.Empty;
         [EmailAddress]
         public string Email { get; set; } = string.Empty;

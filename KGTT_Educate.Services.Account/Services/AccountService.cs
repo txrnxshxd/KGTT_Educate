@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using KGTT_Educate.Services.Account.Data.Repository.Interfaces;
+﻿using KGTT_Educate.Services.Account.Data.Repository.Interfaces;
 using KGTT_Educate.Services.Account.Models;
 using KGTT_Educate.Services.Account.Models.Dto;
 using KGTT_Educate.Services.Account.Services.Interfaces;
@@ -117,6 +116,9 @@ namespace KGTT_Educate.Services.Account.Services
             var userId = validationResult.UserId;
             var user = await _uow.Users.GetAsync(x => x.Id == Guid.Parse(userId));
 
+            var roles = await _uow.UserRole.GetManyAsync(x => x.User.Login == user.Login, includeProperties: "User,Role");
+            var userGroups = await _uow.UserGroup.GetManyAsync(ug => ug.UserId == user.Id, includeProperties: "User,Group");
+
             if (user == null)
                 throw new SecurityTokenException("User not found");
 
@@ -128,6 +130,24 @@ namespace KGTT_Educate.Services.Account.Services
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             };
+
+            // Добавление ролей пользователя в claims
+            if (roles.Any())
+            {
+                foreach (var role in roles)
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, role.Role.Name));
+                }
+            }
+
+            if (userGroups.Any())
+            {
+                foreach (var group in userGroups)
+                {
+                    claims.Add(new Claim("group", group.Group.Id.ToString()));
+                    claims.Add(new Claim("groupName", group.Group.Name));
+                }
+            }
 
             // Генерация новой пары токенов
             var newTokenPair = await _jwtService.GenerateTokenPairAsync(userId, claims);

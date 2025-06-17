@@ -18,7 +18,6 @@ namespace KGTT_Educate.Services.Courses.Controllers
     [ApiController]
     public class CoursesController : ControllerBase
     {
-        // СДЕЛАТЬ УДАЛЕНИЕ ФАЙЛОВ АСИНХРОННО
         private readonly IUnitOfWork _uow;
         private readonly ICommandDataClient _httpCommand;
         private readonly IConfiguration _configuration;
@@ -30,13 +29,54 @@ namespace KGTT_Educate.Services.Courses.Controllers
             _configuration = configuration;
         }
 
-        
         [HttpGet]
         [Authorize(Policy = "AdminOnly")]
-        public async Task<ActionResult<List<Course>>> GetAll()
+        public async Task<ActionResult<IEnumerable<Course>>> GetAll()
         {
-            // ПОЛУЧАЕМ ВСЕ КУРСЫ
             IEnumerable<Course> courses = await _uow.Courses.GetAllAsync();
+
+            if (courses == null || courses.Count() <= 0) return NotFound();
+
+            return Ok(courses);
+        }
+
+        [HttpGet("GetAllWithGroups")]
+        [Authorize(Policy = "AdminOnly")]
+        public async Task<ActionResult<IEnumerable<CourseGroup>>> GetAllWithGroups()
+        {
+            var grpcClient = new GrpcAccountClient(_configuration);
+
+            // ПОЛУЧАЕМ ВСЕ КУРСЫ
+            IEnumerable<CourseGroup> courses = await _uow.CourseGroup.GetAllAsync();
+
+            // Собираем УНИКАЛЬНЫЕ GroupId
+            var uniqueGroupIds = courses
+                .Select(c => c.GroupId)
+                .Distinct()
+                .ToList();
+
+            // Пакетный запрос групп через gRPC
+            var groupRequests = uniqueGroupIds.Select(id => grpcClient.GetGroupAsync(id));
+
+            // Параллельное выполнение всех запросов
+            var groupResponses = await Task.WhenAll(groupRequests);
+
+            // Создаем словарь для быстрого поиска
+            var groupsDict = groupResponses
+                .Where(r => r != null)
+                .ToDictionary(g => g.Id, g => g);
+
+            foreach (var course in courses)
+            {
+                if (groupsDict.TryGetValue(course.GroupId, out var group))
+                {
+                    course.GroupDTO = group;
+                }
+                else
+                {
+                    Console.WriteLine($"Группа {course.GroupId} не найдена для курса {course.Id}");
+                }
+            }
 
             if (courses == null || courses.Count() <= 0) return NotFound();
 
@@ -57,7 +97,6 @@ namespace KGTT_Educate.Services.Courses.Controllers
             return Ok(course);
         }
 
-
         
         [HttpGet("Group/{groupId}")]
         [Authorize(Policy = "Authenticated")]
@@ -72,6 +111,11 @@ namespace KGTT_Educate.Services.Courses.Controllers
             IEnumerable<CourseGroup> courseGroup = await _uow.CourseGroup.GetByGroupId(groupId);
 
             if (courseGroup == null) return NotFound($"Не найдено ни одного курса для группы {group.Name}");
+
+            foreach (var item in courseGroup)
+            {
+                item.GroupDTO = group;
+            }
 
             return Ok(courseGroup);
         }
@@ -95,9 +139,10 @@ namespace KGTT_Educate.Services.Courses.Controllers
             CourseGroup courseGroup = new()
             {
                 Id = last == null ? 1 : last.Id + 1,
+                GroupId = groupId,
                 CourseId = courseId,
                 Course = course,
-                GroupId = group.Id
+                GroupDTO = group
             };
             await _uow.CourseGroup.CreateAsync(courseGroup);
 

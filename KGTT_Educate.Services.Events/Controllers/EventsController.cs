@@ -52,6 +52,18 @@ namespace KGTT_Educate.Services.Events.Controllers
             return Ok(evnt);
         }
 
+        [HttpPut]
+        public IActionResult Edit([FromForm] EventDTO evnt)
+        {
+            if (evnt == null) return BadRequest();
+
+            _uow.Events.Update(evnt.Adapt<Event>());
+
+            _uow.Save();
+
+            return Ok(evnt);
+        }
+
         [HttpDelete("{id}")]
         public IActionResult Delete(Guid id)
         {

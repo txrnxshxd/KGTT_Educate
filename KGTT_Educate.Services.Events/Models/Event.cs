@@ -10,7 +10,6 @@ namespace KGTT_Educate.Services.Events.Models
         public string? Name { get; set; }
         [Required]
         public string Description { get; set; } = string.Empty;
-        public string? MediaLocalPath { get; set; }
         public string? EventLocation { get; set; }
         [Column(TypeName = "decimal(18,2)")]
         public decimal Price { get; set; }
