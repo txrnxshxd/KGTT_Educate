@@ -3,6 +3,7 @@ using System;
 using KGTT_Educate.Services.Events.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace KGTT_Educate.Services.Events.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250617125957_deleteEventPhoto")]
+    partial class deleteEventPhoto
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -50,7 +53,7 @@ namespace KGTT_Educate.Services.Events.Migrations
                     b.ToTable("Events", "Events");
                 });
 
-            modelBuilder.Entity("KGTT_Educate.Services.Events.Models.EventGroup", b =>
+            modelBuilder.Entity("KGTT_Educate.Services.Events.Models.EventUser", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -59,17 +62,17 @@ namespace KGTT_Educate.Services.Events.Migrations
                     b.Property<Guid>("EventId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("GroupId")
+                    b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
                     b.HasIndex("EventId");
 
-                    b.ToTable("EventGroup", "Events");
+                    b.ToTable("EventUser", "Events");
                 });
 
-            modelBuilder.Entity("KGTT_Educate.Services.Events.Models.EventGroup", b =>
+            modelBuilder.Entity("KGTT_Educate.Services.Events.Models.EventUser", b =>
                 {
                     b.HasOne("KGTT_Educate.Services.Events.Models.Event", "Event")
                         .WithMany()

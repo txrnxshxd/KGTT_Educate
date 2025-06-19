@@ -6,17 +6,17 @@ using System.Linq.Expressions;
 
 namespace KGTT_Educate.Services.Events.Data.Repository
 {
-    public class EventUserRepository : Repository<EventUser>, IEventUserRepository
+    public class EventGroupRepository : Repository<EventGroup>, IEventGroupRepository
     {
         private AppDbContext _context;
-        public EventUserRepository(AppDbContext context) : base(context)
+        public EventGroupRepository(AppDbContext context) : base(context)
         {
             _context = context;
         }
 
-        public IEnumerable<EventUser> GetMany(Expression<Func<EventUser, bool>> predicate, string? includeProperties = null)
+        public IEnumerable<EventGroup> GetMany(Expression<Func<EventGroup, bool>> predicate, string? includeProperties = null)
         {
-            IQueryable<EventUser> query = dbSet;
+            IQueryable<EventGroup> query = dbSet;
 
             query = query.Where(predicate);
 
@@ -32,9 +32,9 @@ namespace KGTT_Educate.Services.Events.Data.Repository
             return query.ToList();
         }
 
-        public void Update(EventUser EventUser)
+        public void Update(EventGroup EventUser)
         {
-            _context.EventUser.Update(EventUser);
+            _context.EventGroup.Update(EventUser);
         }
     }
 }

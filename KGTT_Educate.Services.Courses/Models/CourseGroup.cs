@@ -8,10 +8,7 @@ namespace KGTT_Educate.Services.Courses.Models
     {
         public int Id { get; set; }
         public int CourseId { get; set; }
-        [ForeignKey(nameof(CourseId))]
-        public Course? Course { get; set; }
         [BsonRepresentation(MongoDB.Bson.BsonType.String)]
         public Guid GroupId { get; set; }
-        public GroupDTO GroupDTO { get; set; }
     }
 }

@@ -109,10 +109,7 @@
         }
       ],
       "UpstreamPathTemplate": "/auth/refreshToken",
-      "UpstreamHttpMethod": [ "POST" ],
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "Bearer"
-      }
+      "UpstreamHttpMethod": [ "POST" ]
     },
     {
       "DownstreamPathTemplate": "/api/Auth/Logout",

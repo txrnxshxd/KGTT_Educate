@@ -217,7 +217,6 @@ namespace KGTT_Educate.Services.Account.Controllers
         }
 
         [HttpPost("RefreshToken")]
-        [AllowAnonymous]
         public async Task<ActionResult<RefreshTokenResponse>> RefreshToken()
         {
             var refreshToken = Request.Cookies["refreshToken"];

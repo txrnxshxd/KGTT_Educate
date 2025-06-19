@@ -125,7 +125,7 @@ namespace KGTT_Educate.Services.Account.Controllers
                     if (!response.IsSuccessStatusCode)
                     {
                         var error = await response.Content.ReadAsStringAsync();
-                        Console.WriteLine($"---> Ошибка загрузки файла: {error}");
+                        return StatusCode(500, $"---> Ошибка загрузки файла: {error}");
                     }
 
                     FilesApiResponse fileResult = await response.Content.ReadFromJsonAsync<FilesApiResponse>();
@@ -134,7 +134,7 @@ namespace KGTT_Educate.Services.Account.Controllers
                 }
                 catch (HttpRequestException ex)
                 {
-                    Console.WriteLine($"Ошибка сети: {ex.Message}");
+                    return StatusCode(500, $"Ошибка сети: {ex.Message}");
                 }
                 catch (JsonException ex)
                 {

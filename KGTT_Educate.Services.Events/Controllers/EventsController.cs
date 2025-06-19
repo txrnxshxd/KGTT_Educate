@@ -3,6 +3,7 @@ using KGTT_Educate.Services.Events.Models;
 using KGTT_Educate.Services.Events.Models.Dto;
 using KGTT_Educate.Services.Events.SyncDataServices.Grpc;
 using Mapster;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -32,6 +33,7 @@ namespace KGTT_Educate.Services.Events.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Policy = "Authenticated")]
         public IActionResult GetById(Guid id)
         {
             Event evnt = _uow.Events.Get(x => x.Id == id);
@@ -41,7 +43,8 @@ namespace KGTT_Educate.Services.Events.Controllers
 
 
         [HttpPost]
-        public IActionResult Post([FromForm] EventDTO evnt)
+        [Authorize(Policy = "AdminOnly")]
+        public IActionResult Post(EventDTO evnt)
         {
             if (evnt == null) return BadRequest();
 
@@ -53,11 +56,12 @@ namespace KGTT_Educate.Services.Events.Controllers
         }
 
         [HttpPut]
-        public IActionResult Edit([FromForm] EventDTO evnt)
+        [Authorize(Policy = "AdminOnly")]
+        public IActionResult Edit([FromForm] Event evnt)
         {
             if (evnt == null) return BadRequest();
 
-            _uow.Events.Update(evnt.Adapt<Event>());
+            _uow.Events.Update(evnt);
 
             _uow.Save();
 
@@ -65,6 +69,7 @@ namespace KGTT_Educate.Services.Events.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy = "AdminOnly")]
         public IActionResult Delete(Guid id)
         {
             Event evnt = _uow.Events.Get(x => x.Id == id);
@@ -80,48 +85,62 @@ namespace KGTT_Educate.Services.Events.Controllers
 
         // Пользователи мероприятия
         [HttpGet("Users/{eventId}")]
+        [Authorize(Policy = "Authenticated")]
         public IActionResult GetEventUsers(Guid eventId)
         {
-            IEnumerable<EventUser> users = _uow.EventUser.GetMany(x => x.EventId == eventId, "Event");
+            IEnumerable<EventGroup> groups = _uow.EventGroup.GetMany(x => x.EventId == eventId, "Event").Distinct();
+
+            if (groups == null || !groups.Any()) return NotFound();
+
+            List<UserGroupDTO> users = new();
+
+            var grpcClient = new GrpcAccountClient(_configuration);
+
+            foreach (var group in groups)
+            {
+                var userGroup = grpcClient.GetUserGroup(group.GroupId);
+
+                foreach (var user in userGroup)
+                {
+                    users.Add(user);
+                }
+            }
 
             if (!users.Any()) return NotFound();
 
             return Ok(users);
         }
 
-        // Получение пользователей по 
-        [HttpGet("Group/{groupId}")]
-        public IActionResult GetEventGroupUsers(Guid groupId)
+        [HttpGet("Groups/{eventId}")]
+        [Authorize(Policy = "Authenticated")]
+        public IActionResult GetEventGroups(Guid eventId)
         {
-            var grpcClient = new GrpcAccountClient(_configuration);
-            IEnumerable<UserGroupDTO> users = grpcClient.GetUserGroup(groupId);
+            IEnumerable<EventGroup> groups = _uow.EventGroup.GetMany(x => x.EventId == eventId, "Event").Distinct();
 
-            if (users == null || users.Count() == 0) return NotFound();
+            if (groups == null || !groups.Any()) return NotFound("Групп не найдено");
 
-            return Ok(users);
+            return Ok(groups);
         }
 
         [HttpPost("Group/{groupId}")]
+        [Authorize(Policy = "AdminOnly")]
         public IActionResult CreateEventGroup(Guid eventId, Guid groupId)
         {
             Event evnt = _uow.Events.Get(x => x.Id == eventId);
 
             var grpcClient = new GrpcAccountClient(_configuration);
-            IEnumerable<UserGroupDTO> userGroup = grpcClient.GetUserGroup(groupId);
+            GroupDTO group = grpcClient.GetGroup(groupId);
 
-            if (userGroup == null) return NotFound();
+            if (group == null) return NotFound();
 
-            foreach (var user in userGroup)
+            EventGroup eventUser = new()
             {
-                EventUser eventUser = new()
-                {
-                    UserId = user.User.Id,
-                    EventId = eventId,
-                    Event = evnt
-                };
+                GroupId = group.Id,
+                EventId = eventId,
+                Event = evnt
+            };
 
-                _uow.EventUser.Add(eventUser);
-            }
+            _uow.EventGroup.Add(eventUser);
 
             _uow.Save();
 

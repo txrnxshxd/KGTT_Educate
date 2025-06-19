@@ -3,7 +3,7 @@
     public interface IUoW
     {
         IEventsRepository Events { get; }
-        IEventUserRepository EventUser { get; }
+        IEventGroupRepository EventGroup { get; }
 
         void Save();
     }

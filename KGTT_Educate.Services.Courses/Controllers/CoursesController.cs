@@ -66,11 +66,18 @@ namespace KGTT_Educate.Services.Courses.Controllers
                 .Where(r => r != null)
                 .ToDictionary(g => g.Id, g => g);
 
+            List<CourseGroupDTO> newCourses = new();
+
             foreach (var course in courses)
             {
                 if (groupsDict.TryGetValue(course.GroupId, out var group))
                 {
-                    course.GroupDTO = group;
+                    newCourses.Add(new CourseGroupDTO
+                    {
+                        Id = course.Id,
+                        Course = await _uow.Courses.GetByIdAsync(course.Id),
+                        Group = group
+                    });
                 }
                 else
                 {
@@ -112,12 +119,19 @@ namespace KGTT_Educate.Services.Courses.Controllers
 
             if (courseGroup == null) return NotFound($"Не найдено ни одного курса для группы {group.Name}");
 
+            List<CourseGroupDTO> courseGroupDTO = new();
+
             foreach (var item in courseGroup)
             {
-                item.GroupDTO = group;
+                courseGroupDTO.Add(new CourseGroupDTO
+                {
+                    Id = item.Id,
+                    Course = await _uow.Courses.GetByIdAsync(item.CourseId),
+                    Group = group
+                });
             }
 
-            return Ok(courseGroup);
+            return Ok(courseGroupDTO);
         }
 
         [HttpPost("Group")]
@@ -141,8 +155,6 @@ namespace KGTT_Educate.Services.Courses.Controllers
                 Id = last == null ? 1 : last.Id + 1,
                 GroupId = groupId,
                 CourseId = courseId,
-                Course = course,
-                GroupDTO = group
             };
             await _uow.CourseGroup.CreateAsync(courseGroup);
 
@@ -389,7 +401,6 @@ namespace KGTT_Educate.Services.Courses.Controllers
                     OriginalName = result.OriginalName,
                     FileName = result.FileName,
                     LocalFilePath = result.LocalFilePath,
-                    Course = course,
                     IsPinned = isPinned
                 };
 

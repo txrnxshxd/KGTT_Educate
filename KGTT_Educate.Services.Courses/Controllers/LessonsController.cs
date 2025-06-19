@@ -191,7 +191,6 @@ namespace KGTT_Educate.Services.Courses.Controllers
                     OriginalName = file.FileName,
                     FileName = result.FileName,
                     LocalFilePath = result.LocalFilePath,
-                    Lesson = lesson,
                     IsPinned = isPinned
                 };
 

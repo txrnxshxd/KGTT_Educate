@@ -40,13 +40,13 @@ namespace KGTT_Educate.Services.Account.Controllers
         }
 
         [HttpGet("User/{userId}")]
-        public IActionResult GetUserRole(Guid userId)
+        public IActionResult GetUserRoles(Guid userId)
         {
-            UserRole userRole = _uow.UserRole.Get(x => x.UserId == userId, "User,Role");
+            IEnumerable<UserRole> userRole = _uow.UserRole.GetMany(x => x.UserId == userId, "User,Role");
 
             if (userRole == null) return NotFound();
 
-            return Ok(userRole.Adapt<UserRoleDTO>());
+            return Ok(userRole.Adapt<IEnumerable<UserRoleDTO>>());
         }
 
         [HttpGet("Users/{roleId}")]
@@ -96,10 +96,10 @@ namespace KGTT_Educate.Services.Account.Controllers
             return Ok(role);
         }
 
-        [HttpDelete("User/{userId}")]
-        public IActionResult DeleteUserRole(Guid userId)
+        [HttpDelete("User/{userId:guid}/Role/{roleId:guid}")]
+        public IActionResult DeleteUserRole(Guid userId, Guid roleId)
         {
-            UserRole userRole = _uow.UserRole.Get(x => x.UserId == userId, "User,Role");
+            UserRole userRole = _uow.UserRole.Get(x => x.UserId == userId && x.RoleId == roleId, "User,Role");
 
             _uow.UserRole.Delete(userRole);
 

@@ -8,7 +8,7 @@ namespace KGTT_Educate.Services.Events.Data.Repository
 
         public IEventsRepository Events { get; private set; }
 
-        public IEventUserRepository EventUser { get; private set; }
+        public IEventGroupRepository EventGroup { get; private set; }
 
  
 
@@ -17,7 +17,7 @@ namespace KGTT_Educate.Services.Events.Data.Repository
             _context = context;
 
             Events = new EventsRepository(context);
-            EventUser = new EventUserRepository(context);
+            EventGroup = new EventGroupRepository(context);
         }
 
         public void Save()

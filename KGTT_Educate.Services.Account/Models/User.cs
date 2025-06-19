@@ -17,6 +17,7 @@ namespace KGTT_Educate.Services.Account.Models
         [EmailAddress]
         public string Email { get; set; } = string.Empty;
         [Phone]
+        [Length(10,10)]
         public string? PhoneNumber { get; set; }
         public string? Telegram { get; set; }
         public string LastName { get; set; } = string.Empty;

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace KGTT_Educate.Services.Events.Models.Dto
 {
-    public class EventUserDTO
+    public class EventGroupDTO
     {
         [Key]
         public Guid Id { get; set; }
