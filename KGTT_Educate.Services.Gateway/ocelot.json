@@ -168,7 +168,22 @@
         }
       ],
       "UpstreamPathTemplate": "/groups/user/{userId}",
-      "UpstreamHttpMethod": [ "GET", "POST", "DELETE" ],
+      "UpstreamHttpMethod": [ "GET", "POST" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/Groups/User/{userId}/Group/{groupId}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "192.168.0.37",
+          "Port": 10004
+        }
+      ],
+      "UpstreamPathTemplate": "/groups/user/{userId}/group/{groupId}",
+      "UpstreamHttpMethod": [ "DELETE" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer"
       }
@@ -198,7 +213,7 @@
         }
       ],
       "UpstreamPathTemplate": "/groups/{id}",
-      "UpstreamHttpMethod": [ "DELETE" ],
+      "UpstreamHttpMethod": [ "GET", "PUT", "DELETE" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer"
       }
@@ -246,6 +261,21 @@
       ],
       "UpstreamPathTemplate": "/roles/users/{roleId}",
       "UpstreamHttpMethod": [ "GET" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/Roles/User/{userId}/Role/{roleId}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "192.168.0.37",
+          "Port": 10004
+        }
+      ],
+      "UpstreamPathTemplate": "/roles/users/{roleId}",
+      "UpstreamHttpMethod": [ "POST", "DELETE" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer"
       }
@@ -312,6 +342,21 @@
       }
     },
     {
+      "DownstreamPathTemplate": "/api/Courses/Preview/{courseId}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "192.168.0.37",
+          "Port": 10001
+        }
+      ],
+      "UpstreamPathTemplate": "/courses/preview/{courseId}",
+      "UpstreamHttpMethod": [ "GET", "PUT" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
       "DownstreamPathTemplate": "/api/Courses/Group/{groupId}",
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
@@ -366,6 +411,21 @@
         }
       ],
       "UpstreamPathTemplate": "/courses/files/{fileId}",
+      "UpstreamHttpMethod": [ "DELETE" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/Courses/Group/{groupId}/Course/{courseId}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "192.168.0.37",
+          "Port": 10001
+        }
+      ],
+      "UpstreamPathTemplate": "/courses/group/{groupId}/course/{courseId}",
       "UpstreamHttpMethod": [ "DELETE" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer"
@@ -535,7 +595,7 @@
       }
     },
     {
-      "DownstreamPathTemplate": "/api/Events/Group/{groupId}",
+      "DownstreamPathTemplate": "/api/Events/Group/{groupId}/Event/{eventId}",
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
@@ -543,8 +603,23 @@
           "Port": 10003
         }
       ],
-      "UpstreamPathTemplate": "/events/group/{groupId}",
-      "UpstreamHttpMethod": [ "POST" ],
+      "UpstreamPathTemplate": "/events/group/{groupId}/event/{eventId}",
+      "UpstreamHttpMethod": [ "POST", "DELETE" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/Events/Groups/{eventId}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "192.168.0.37",
+          "Port": 10003
+        }
+      ],
+      "UpstreamPathTemplate": "/events/groups/{eventId}",
+      "UpstreamHttpMethod": [ "GET" ],
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "Bearer"
       }

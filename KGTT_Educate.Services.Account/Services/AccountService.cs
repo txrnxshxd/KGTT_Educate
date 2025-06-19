@@ -82,7 +82,6 @@ namespace KGTT_Educate.Services.Account.Services
                 foreach (var group in userGroups)
                 {
                     claims.Add(new Claim("group", group.Group.Id.ToString()));
-                    claims.Add(new Claim("groupName", group.Group.Name));
                 }
             }
 
@@ -145,7 +144,6 @@ namespace KGTT_Educate.Services.Account.Services
                 foreach (var group in userGroups)
                 {
                     claims.Add(new Claim("group", group.Group.Id.ToString()));
-                    claims.Add(new Claim("groupName", group.Group.Name));
                 }
             }
 

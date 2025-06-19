@@ -161,6 +161,15 @@ namespace KGTT_Educate.Services.Courses.Controllers
             return Ok(courseGroup);
         }
 
+        [HttpDelete("Group/{groupId}/Course/{courseId}")]
+        [Authorize(Policy = "AdminOrTeacher")]
+        public async Task<ActionResult> DeleteGroupFromCourse(int courseId, Guid groupId)
+        {
+            await _uow.CourseGroup.DeleteCourseGroup(courseId, groupId);
+
+            return Ok("Связь удалена");
+        }
+
         [HttpGet("Files/{courseId}")]
         [Authorize(Policy = "Authenticated")]
         public async Task<ActionResult> GetFilesByCourseId(int courseId)
@@ -220,7 +229,7 @@ namespace KGTT_Educate.Services.Courses.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Policy = "AdminOrTeacher")]
-        public async Task<ActionResult> Update(int id, CourseRequest courseRequest)
+        public async Task<ActionResult> Update(int id, Course courseRequest)
         {
             if (courseRequest == null || id == 0) return BadRequest();
 
@@ -230,50 +239,6 @@ namespace KGTT_Educate.Services.Courses.Controllers
 
             course.Name = courseRequest.Name;
             course.Description = courseRequest.Description;
-
-            if (courseRequest.FormFile != null)
-            {
-                try
-                {
-                    using HttpResponseMessage response = await _httpCommand.SendFile(courseRequest.FormFile, "Courses");
-
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        var error = await response.Content.ReadAsStringAsync();
-                        Console.WriteLine(StatusCode((int)response.StatusCode, $"Ошибка загрузки файла: {error}"));
-                    }
-
-                    var result = await response.Content.ReadFromJsonAsync<FilesApiResponse>();
-
-                    course.LocalPreviewPhotoPath = result.LocalFilePath;
-                }
-                catch (HttpRequestException ex)
-                {
-                    Console.WriteLine($"Ошибка сети: {ex.Message}");
-                }
-                catch (JsonException ex)
-                {
-                    Console.WriteLine($"Ошибка JSON: {ex.Message}"); ;
-                }
-            }
-            else
-            {
-                if (course.LocalPreviewPhotoPath != null)
-                {
-                    using HttpResponseMessage response = await _httpCommand.DeleteFile(course.LocalPreviewPhotoPath);
-
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        var error = await response.Content.ReadAsStringAsync();
-                        Console.WriteLine(StatusCode((int)response.StatusCode, $"Ошибка удаления файла: {error}"));
-                    }
-                    else
-                    {
-                        course.LocalPreviewPhotoPath = null;
-                    }
-
-                }
-            }
 
             try
             {
@@ -339,28 +304,6 @@ namespace KGTT_Educate.Services.Courses.Controllers
 
             return Ok(new { message = "Курс удален" });
         }
-
-        //[HttpGet("Files/Get/{fileId}")]
-        //public async Task<ActionResult> GetFile(int fileId)
-        //{
-        //    if (fileId <= 0) return BadRequest();
-
-        //    CourseFile file = await _uow.CourseFiles.GetByIdAsync(fileId);
-
-        //    try
-        //    {
-        //        var (fileStream, contentType) = await _httpRead.GetFile(file.LocalFilePath);
-        //        return File(fileStream, contentType);
-        //    }
-        //    catch (HttpRequestException ex)
-        //    {
-        //        return StatusCode((int)ex.StatusCode!, $"Ошибка сети: {ex.Message}");
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return BadRequest(ex.Message);
-        //    }
-        //}
 
 
         [HttpPost("Files/{courseId}")]
@@ -448,6 +391,59 @@ namespace KGTT_Educate.Services.Courses.Controllers
             await _uow.CourseFiles.DeleteAsync(fileId);
 
             return Ok(file);
+        }
+
+        [HttpPut("Preview/{courseId}")]
+        [Consumes("multipart/form-data")]
+        public async Task<ActionResult> UpdatePreview(IFormFile avatar, int courseId)
+        {
+            if (courseId == 0) return BadRequest();
+
+            Course course = await _uow.Courses.GetByIdAsync(courseId);
+
+            if (course == null) return NotFound();
+
+            if (avatar != null)
+            {
+                try
+                {
+                    Console.WriteLine("--> Запрос к FilesAPI");
+                    using HttpResponseMessage response = await _httpCommand.SendFile(avatar, "Courses");
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        var error = await response.Content.ReadAsStringAsync();
+                        return StatusCode(500, $"---> Ошибка загрузки файла: {error}");
+                    }
+
+                    if (course.LocalPreviewPhotoPath != null)
+                    {
+                        using HttpResponseMessage deleteResponse = await _httpCommand.DeleteFile(course.LocalPreviewPhotoPath);
+
+                        if (!deleteResponse.IsSuccessStatusCode)
+                        {
+                            var error = await deleteResponse.Content.ReadAsStringAsync();
+                            Console.WriteLine($"---> Ошибка удаления файла: {error}");
+                        }
+                    }
+
+                    FilesApiResponse fileResult = await response.Content.ReadFromJsonAsync<FilesApiResponse>();
+
+                    course.LocalPreviewPhotoPath = fileResult.LocalFilePath;
+                }
+                catch (HttpRequestException ex)
+                {
+                    return StatusCode(500, $"Ошибка сети: {ex.Message}");
+                }
+                catch (JsonException ex)
+                {
+                    Console.WriteLine($"Ошибка JSON: {ex.Message}");
+                }
+            }
+
+            await _uow.Courses.UpdateAsync(courseId, course);
+
+            return Ok("Успешная смена превью");
         }
     }
 }

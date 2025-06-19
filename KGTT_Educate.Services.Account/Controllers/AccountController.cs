@@ -109,7 +109,7 @@ namespace KGTT_Educate.Services.Account.Controllers
         [Consumes("multipart/form-data")]
         public async Task<ActionResult> UpdateAvatar(IFormFile avatar, Guid userId)
         {
-            if (avatar == null || userId == Guid.Empty) return BadRequest();
+            if (userId == Guid.Empty) return BadRequest();
 
             User user = _uow.Users.Get(x => x.Id == userId);
 
@@ -119,16 +119,27 @@ namespace KGTT_Educate.Services.Account.Controllers
             {
                 try
                 {
-                    Console.WriteLine("--> Запрос к FilesAPI");
-                    using HttpResponseMessage response = await _httpCommand.SendFile(avatar, "Accounts");
 
-                    if (!response.IsSuccessStatusCode)
+                    using HttpResponseMessage uploadResponse = await _httpCommand.SendFile(avatar, "Accounts");
+
+                    if (!uploadResponse.IsSuccessStatusCode)
                     {
-                        var error = await response.Content.ReadAsStringAsync();
+                        var error = await uploadResponse.Content.ReadAsStringAsync();
                         return StatusCode(500, $"---> Ошибка загрузки файла: {error}");
                     }
 
-                    FilesApiResponse fileResult = await response.Content.ReadFromJsonAsync<FilesApiResponse>();
+                    if (user.AvatarLocalPath != null)
+                    {
+                        using HttpResponseMessage deleteResponse = await _httpCommand.DeleteFile(user.AvatarLocalPath);
+
+                        if (!deleteResponse.IsSuccessStatusCode)
+                        {
+                            var error = await deleteResponse.Content.ReadAsStringAsync();
+                            Console.WriteLine($"---> Ошибка удаления файла: {error}");
+                        }
+                    }
+
+                    FilesApiResponse fileResult = await uploadResponse.Content.ReadFromJsonAsync<FilesApiResponse>();
 
                     user.AvatarLocalPath = fileResult.LocalFilePath;
                 }

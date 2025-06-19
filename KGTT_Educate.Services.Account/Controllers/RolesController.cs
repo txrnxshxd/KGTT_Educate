@@ -59,7 +59,7 @@ namespace KGTT_Educate.Services.Account.Controllers
             return Ok(users.Adapt<IEnumerable<UserRoleDTO>>());
         }
 
-        [HttpPost("User/{userId}")]
+        [HttpPost("User/{userId}/Role/{roleId}")]
         public IActionResult CreateUserRole(Guid userId, [FromForm] Guid roleId)
         {
             User user = _uow.Users.Get(x => x.Id == userId);

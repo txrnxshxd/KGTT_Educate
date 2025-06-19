@@ -26,6 +26,12 @@ namespace KGTT_Educate.Services.FilesAPI.Controllers
 
             string wwwrootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", path);
 
+            if (!System.IO.File.Exists(wwwrootPath))
+            {
+                Console.WriteLine($"--> Файл не найден! {wwwrootPath}");
+                return NotFound("Файл не найден!");
+            }
+
             string downloadName = !string.IsNullOrEmpty(downloadNameRequest) ? downloadNameRequest : path;
 
             if (!_contentTypeProvider.TryGetContentType(wwwrootPath, out var contentType))
@@ -38,9 +44,9 @@ namespace KGTT_Educate.Services.FilesAPI.Controllers
                 Console.WriteLine("--> Вызов GetFile");
                 return PhysicalFile(wwwrootPath, contentType, fileDownloadName: Uri.EscapeDataString(downloadName), enableRangeProcessing: true);
             }
-            catch (FileNotFoundException ex)
+            catch (Exception ex)
             {
-                Console.WriteLine($"--> Файл не найден! {ex}");
+                Console.WriteLine($"--> Непредвиденная ошибка: {ex}");
                 return NotFound("Файл не найден!");
             }
         }

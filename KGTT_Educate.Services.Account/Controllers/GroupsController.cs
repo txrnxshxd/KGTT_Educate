@@ -29,6 +29,15 @@ namespace KGTT_Educate.Services.Account.Controllers
             return Ok(groups);
         }
 
+        [HttpGet("{id}")]
+        [Authorize(Policy = "Authenticated")]
+        public IActionResult Get(Guid id)
+        {
+            Group group = _uow.Groups.Get(x => x.Id == id);
+
+            return Ok(group);
+        }
+
         [HttpPost]
         [Authorize(Policy = "AdminOnly")]
         public IActionResult CreateGroup(Group group)
@@ -59,11 +68,11 @@ namespace KGTT_Educate.Services.Account.Controllers
         [Authorize(Policy = "Authenticated")]
         public IActionResult GetUserGroup(Guid userId)
         {
-            UserGroup userGroup = _uow.UserGroup.Get(x => x.UserId == userId, "User,Group");
+            IEnumerable<UserGroup> userGroup = _uow.UserGroup.GetMany(x => x.UserId == userId, "User,Group");
 
             if (userGroup == null) return NotFound();
 
-            return Ok(userGroup.Adapt<UserGroupDTO>());
+            return Ok(userGroup.Adapt<IEnumerable<UserGroupDTO>>());
         }
 
         [HttpGet("Users/{groupId}")]
@@ -116,11 +125,11 @@ namespace KGTT_Educate.Services.Account.Controllers
             return Ok(group.Adapt<GroupDTO>());
         }
 
-        [HttpDelete("User/{userId}")]
+        [HttpDelete("User/{userId}/Group/{groupId}")]
         [Authorize(Policy = "AdminOnly")]
-        public IActionResult DeleteUserGroup(Guid userId)
+        public IActionResult DeleteUserGroup(Guid userId, Guid groupId)
         {
-            UserGroup userGroup = _uow.UserGroup.Get(x => x.UserId == userId, "User,Group");
+            UserGroup userGroup = _uow.UserGroup.Get(x => x.UserId == userId && x.GroupId == groupId, "User,Group");
 
             _uow.UserGroup.Delete(userGroup);
 

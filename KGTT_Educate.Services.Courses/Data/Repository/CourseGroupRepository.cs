@@ -24,5 +24,10 @@ namespace KGTT_Educate.Services.Courses.Data.Repository
         {
             return await _collection.Find(Builders<CourseGroup>.Filter.Eq(x => x.GroupId, groupId)).ToListAsync();
         }
+
+        public async Task DeleteCourseGroup(int courseId, Guid groupId)
+        {
+            await _collection.DeleteManyAsync(x => x.GroupId == groupId && x.CourseId == courseId);
+        }
     }
 }

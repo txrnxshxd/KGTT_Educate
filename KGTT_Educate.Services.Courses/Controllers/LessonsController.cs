@@ -208,28 +208,6 @@ namespace KGTT_Educate.Services.Courses.Controllers
             }
         }
 
-        //[HttpGet("Files/Get/{fileId}")]
-        //public async Task<ActionResult> GetFile(int fileId)
-        //{
-        //    if (fileId <= 0) return BadRequest();
-
-        //    LessonFile file = await _uow.LessonFiles.GetByIdAsync(fileId);
-
-        //    try
-        //    {
-        //        var (fileStream, contentType) = await _httpRead.GetFile(file.LocalFilePath);
-        //        return File(fileStream, contentType);
-        //    }
-        //    catch (HttpRequestException ex)
-        //    {
-        //        return StatusCode((int)ex.StatusCode!, $"Ошибка сети: {ex.Message}");
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return BadRequest(ex.Message);
-        //    }
-        //}
-
         [HttpDelete("Files/{fileId}")]
         [Authorize(Roles = "Admin, Teacher")]
         public async Task<ActionResult> DeleteFile(int fileId)

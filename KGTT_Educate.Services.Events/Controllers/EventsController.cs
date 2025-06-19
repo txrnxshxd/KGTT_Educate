@@ -6,6 +6,7 @@ using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KGTT_Educate.Services.Events.Controllers
 {
@@ -122,7 +123,7 @@ namespace KGTT_Educate.Services.Events.Controllers
             return Ok(groups);
         }
 
-        [HttpPost("Group/{groupId}")]
+        [HttpPost("Group/{groupId}/Event/{eventId}")]
         [Authorize(Policy = "AdminOnly")]
         public IActionResult CreateEventGroup(Guid eventId, Guid groupId)
         {
@@ -141,6 +142,24 @@ namespace KGTT_Educate.Services.Events.Controllers
             };
 
             _uow.EventGroup.Add(eventUser);
+
+            _uow.Save();
+
+            return Ok();
+        }
+
+        [HttpDelete("Group/{groupId}/Event/{eventId}")]
+        [Authorize(Policy = "AdminOnly")]
+        public IActionResult DeleteEventGroup(Guid eventId, Guid groupId)
+        {
+            var grpcClient = new GrpcAccountClient(_configuration);
+            GroupDTO group = grpcClient.GetGroup(groupId);
+
+            if (group == null) return NotFound();
+
+            EventGroup eventGroup = _uow.EventGroup.Get(x => x.GroupId == groupId && x.EventId == eventId);
+
+            _uow.EventGroup.Delete(eventGroup);
 
             _uow.Save();
 
