@@ -103,6 +103,7 @@ namespace KGTT_Educate.Services.Events.Controllers
 
                 foreach (var user in userGroup)
                 {
+                    user.Event = group.Event.Adapt<EventDTO>();
                     users.Add(user);
                 }
             }
@@ -120,7 +121,22 @@ namespace KGTT_Educate.Services.Events.Controllers
 
             if (groups == null || !groups.Any()) return NotFound("Групп не найдено");
 
-            return Ok(groups);
+            List<EventGroupDTO> newGroups = new();
+
+            var grpcClient = new GrpcAccountClient(_configuration);
+
+            foreach (var group in groups)
+            {
+                EventGroupDTO newGroup = new()
+                {
+                    Group = grpcClient.GetGroup(group.GroupId),
+                    Event = group.Event,
+                };
+
+                newGroups.Add(newGroup);
+            }
+
+            return Ok(newGroups);
         }
 
         [HttpPost("Group/{groupId}/Event/{eventId}")]
